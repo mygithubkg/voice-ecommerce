@@ -8,6 +8,7 @@ const getSpeechRecognition = () => {
 };
 
 const normalize = (word) => word.toLowerCase().replace(/s$/, ""); // for plurals
+const backendURL = import.meta.env.VITE_BACKEND_URL;
 
 const VoiceCommand = ({ onAddToCart, onRemoveFromCart }) => {
   const [listening, setListening] = useState(false);
@@ -31,7 +32,7 @@ const VoiceCommand = ({ onAddToCart, onRemoveFromCart }) => {
       setTranscript(finalTranscript);
 
       try {
-        const res = await fetch("http://localhost:5000/voice-command", {
+        const res = await fetch(`${backendURL}/voice-command`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
