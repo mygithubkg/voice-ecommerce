@@ -2,8 +2,10 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import fetch from "node-fetch";
+import fetch from "node-fetch"; // if using fetch
 import dotenv from "dotenv";
+import axios from "axios";
+
 dotenv.config();
 
 const app = express();
@@ -12,9 +14,12 @@ const PORT = 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
+const API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
 app.post("/voice-command", async (req, res) => {
   const userCommand = req.body.command;
-  console.log("Received command:", userCommand);
+  console.log("📥 Received command:", userCommand);
 
   const prompt = `
 You are an AI that extracts shopping cart actions from user commands.
@@ -36,47 +41,56 @@ Output: [{"action": "remove", "product": "sugar", "quantity": 1}]
 
 Input: "${userCommand}"
 Output:
-  `;
+`;
 
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTERAPI_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:3000/", // Replace with your site if deployed
-        "X-Title": "VoiceCartBot"
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-3.5-turbo",
-        messages: [
+    const response = await axios.post(
+      GEMINI_URL,
+      {
+        contents: [
           {
-            role: "user",
-            content: prompt.trim()
-          }
-        ]
-      })
-    });
+            parts: [{ text: prompt }],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.7,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": API_KEY, // ✅ API Key sent in headers
+        },
+      }
+    );
 
-    const result = await response.json();
-    const text = result.choices[0]?.message?.content.trim();
+    const geminiText = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+    console.log("🧠 Gemini raw output:", geminiText);
 
-    console.log("OpenRouter response:", text);
+    if (!geminiText) {
+      return res.status(500).json({ error: "No response from Gemini model" });
+    }
+
+    // ✅ Clean output from markdown if present
+    const cleaned = geminiText.replace(/```json|```/g, "").trim();
 
     let parsed;
     try {
-      parsed = JSON.parse(text);
+      parsed = JSON.parse(cleaned);
     } catch (e) {
-      return res.status(400).json({ error: "Invalid JSON from model" });
+      return res.status(400).json({
+        error: "❌ Could not parse Gemini output to JSON.",
+        raw: geminiText,
+      });
     }
 
     res.json({ actions: parsed });
   } catch (err) {
-    console.error("❌ Error:", err);
+    console.error("❌ Gemini API error:", err.message);
     res.status(500).json({ error: "Failed to process command" });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
