@@ -146,3 +146,4 @@ const VoiceCommand = ({ onAddToCart, onRemoveFromCart }) => {
 };
 
 export default VoiceCommand;
+// Changed according to your need 
