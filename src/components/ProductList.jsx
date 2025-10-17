@@ -78,19 +78,21 @@ const ProductCard = ({ product, onAdd }) => (
     initial={{ opacity: 0, y: 40 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.4 }}
-    whileHover={{ scale: 1.03 }}
-    className="bg-white rounded-2xl shadow-md p-5 flex flex-col items-center justify-between hover:shadow-lg transition-shadow duration-200"
+    whileHover={{ scale: 1.04 }}
+    className="bg-white rounded-3xl shadow-xl p-7 flex flex-col items-center border border-indigo-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-200 group relative"
   >
-    <img
-      src={product.image}
-      alt={product.name}
-      className="w-24 h-24 object-contain mb-3"
-    />
-    <h2 className="font-semibold text-lg text-gray-800">{product.name}</h2>
-    <p className="text-indigo-600 font-bold text-md mb-2">${product.price.toFixed(2)}</p>
+    <div className="mb-4 scale-110 group-hover:scale-125 transition-transform duration-200">
+      <img
+        src={product.image || "/vite.svg"}
+        alt={product.name}
+        className="w-20 h-20 object-contain mb-2 drop-shadow"
+      />
+    </div>
+    <h2 className="font-bold text-xl text-blue-800 mb-1 tracking-wide">{product.name}</h2>
+    <p className="text-indigo-600 font-semibold mb-3 text-base">${product.price.toFixed(2)}</p>
     <button
       onClick={() => onAdd(product, 1)}
-      className="bg-indigo-600 text-white font-medium px-4 py-2 rounded-full hover:bg-indigo-500 transition duration-200"
+      className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-full font-semibold shadow hover:from-blue-700 hover:to-indigo-700 transition-colors duration-200 w-full text-base"
     >
       Add to Cart
     </button>
@@ -101,9 +103,11 @@ const ProductList = () => {
   const { addToCart } = useContext(CartContext);
 
   return (
-    <section className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">🛍️ Browse Products</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <section className="p-8 w-4/5 max-w-[1600px] mx-auto text-lg">
+      <h1 className="text-4xl font-extrabold text-gray-800 mb-10 text-center tracking-tight drop-shadow-lg">
+        🛍️ Browse Products
+      </h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} onAdd={addToCart} />
         ))}
@@ -112,4 +116,4 @@ const ProductList = () => {
   );
 };
 
-export { ProductList, products , categories};
+export { ProductList, products , categories };

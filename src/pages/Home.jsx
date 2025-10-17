@@ -1,89 +1,53 @@
-import React, { useContext } from "react";
-import { icons } from "../assets/itemIcons";
-import { CartContext } from "../context/CartContext";
+import React from "react";
 import { categories } from "../components/ProductList";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
-	const { addToCart, getItemQuantity, removeFromCart, setQuantity } =
-		useContext(CartContext);
-	return (
-		<div className="max-w-6xl mx-auto py-8 px-4">
-			<h1 className="text-3xl md:text-4xl font-extrabold text-center text-blue-900 mb-8 drop-shadow-lg">
-				Famous Items
-			</h1>
-			{categories.map((cat) => (
-				<section key={cat.name} className="mb-10">
-					<h2 className="text-2xl font-bold text-indigo-700 mb-4 border-l-4 border-yellow-400 pl-3">
-						{cat.name}
-					</h2>
-					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-						{cat.products.map((product) => {
-							const quantity = getItemQuantity(product.id);
-							return (
-								<div
-									key={product.id}
-									className="bg-white rounded-2xl shadow-xl p-6 flex flex-col items-center hover:scale-105 transition-transform duration-200 border border-indigo-100"
-								>
-									<div className="mb-3">{icons[product.name]}</div>
-									<h3 className="font-bold text-lg text-blue-800 mb-1">
-										{product.name}
-									</h3>
-									<p className="text-gray-600 mb-2">
-										${product.price.toFixed(2)}
-									</p>
-									<div className="flex flex-col items-center gap-2 w-full">
-										<button
-											className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-5 py-2 rounded-full font-semibold shadow hover:from-blue-600 hover:to-indigo-600 transition-colors duration-200 w-full"
-											onClick={() => addToCart(product, 1)}
-										>
-											Add to Cart
-										</button>
-										{quantity > 0 && (
-											<div className="flex items-center gap-2 mt-2">
-												<button
-													className="bg-red-100 text-red-600 rounded-full px-2 py-1 font-bold hover:bg-red-200"
-													onClick={() => removeFromCart(product, 1)}
-												>
-													-
-												</button>
-												<input
-													type="number"
-													min="1"
-													value={quantity}
-													onChange={(e) =>
-														setQuantity(
-															product,
-															Number(e.target.value)
-														)
-													}
-													className="w-14 text-center border rounded px-1 py-0.5"
-												/>
-												<button
-													className="bg-green-100 text-green-700 rounded-full px-2 py-1 font-bold hover:bg-green-200"
-													onClick={() => addToCart(product, 1)}
-												>
-													+
-												</button>
-												<button
-													className="ml-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-													onClick={() => setQuantity(product, 0)}
-												>
-													Remove
-												</button>
-												<span className="ml-2 text-sm text-green-600 font-semibold">
-													In Cart: {quantity}
-												</span>
-											</div>
-										)}
-									</div>
-								</div>
-							);
-						})}
-					</div>
-				</section>
-			))}
-		</div>
-	);
+  const navigate = useNavigate();
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Hero Section */}
+      <section className="w-full bg-gradient-to-r from-indigo-900 to-blue-700 py-16 mb-10 shadow-lg rounded-b-3xl">
+        <div className="w-4/5 max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 text-lg">
+          <div className="flex-1">
+            <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-4 drop-shadow-lg">
+              Welcome to <span className="text-yellow-300">VoiceCart</span>
+            </h1>
+            <p className="text-lg md:text-xl text-indigo-100 mb-6 max-w-lg">
+              Shop your favorite groceries and snacks with ease. Use voice commands for a futuristic shopping experience!
+            </p>
+            <button className="bg-yellow-400 hover:bg-yellow-300 text-blue-900 font-bold px-8 py-3 rounded-full shadow-lg text-lg transition-colors duration-200" onClick={() => navigate("/products")}>Browse Products</button>
+          </div>
+          <div className="flex-1 flex justify-center">
+            <img src="/vite.svg" alt="VoiceCart Logo" className="w-40 h-40 md:w-56 md:h-56 drop-shadow-2xl" />
+          </div>
+        </div>
+      </section>
+      {/* Category Overview */}
+      <div className="w-4/5 max-w-[1600px] mx-auto py-8 px-4">
+        <h2 className="text-3xl md:text-4xl font-extrabold text-center text-blue-900 mb-10 drop-shadow-lg tracking-tight">
+          Shop by Category
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          {categories.map((cat) => (
+            <div
+              key={cat.name}
+              className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center border border-indigo-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 group cursor-pointer"
+              onClick={() => navigate(`/products#${cat.name.toLowerCase()}`)}
+            >
+              <div className="mb-3 text-indigo-700 text-4xl">
+                <span role="img" aria-label={cat.name}>{cat.emoji || "🛒"}</span>
+              </div>
+              <h3 className="font-bold text-2xl text-blue-800 mb-1 tracking-wide">
+                {cat.name}
+              </h3>
+              <p className="text-gray-500 text-sm text-center mt-2">{cat.products.length} items</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Home;

@@ -2,7 +2,6 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import fetch from "node-fetch"; // if using fetch
 import dotenv from "dotenv";
 import axios from "axios";
 
@@ -88,6 +87,46 @@ Output:
   } catch (err) {
     console.error("❌ Gemini API error:", err.message);
     res.status(500).json({ error: "Failed to process command" });
+  }
+});
+
+app.post("/chatbot", async (req, res) => {
+  const userMessage = req.body.message;
+  if (!userMessage) {
+    return res.status(400).json({ error: "No message provided" });
+  }
+
+  const prompt = `You are VoiceCart Assistant, a helpful AI for an e-commerce website. Answer user questions conversationally and helpfully.\n\nUser: ${userMessage}\nAI:`;
+
+  try {
+    const response = await axios.post(
+      GEMINI_URL,
+      {
+        contents: [
+          {
+            parts: [{ text: prompt }],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.7,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": API_KEY,
+        },
+      }
+    );
+
+    const geminiText = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!geminiText) {
+      return res.status(500).json({ error: "No response from Gemini model" });
+    }
+    res.json({ reply: geminiText.trim() });
+  } catch (err) {
+    console.error("❌ Gemini API error (chatbot):", err.message);
+    res.status(500).json({ error: "Failed to process chat message" });
   }
 });
 
