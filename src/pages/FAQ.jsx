@@ -31,37 +31,37 @@ const FAQModal = ({ open, onClose }) => {
   const [openIdx, setOpenIdx] = useState(null);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full border border-indigo-200 relative animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+      <div className="bg-slate-800 rounded-3xl shadow-2xl shadow-indigo-500/20 p-8 max-w-2xl w-full border border-slate-700 relative animate-fade-in">
         <button
-          className="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-3xl font-bold"
+          className="absolute top-4 right-4 text-slate-400 hover:text-white text-3xl font-bold"
           onClick={onClose}
           aria-label="Close FAQ"
         >
           ×
         </button>
-        <h1 className="text-4xl font-extrabold text-blue-900 mb-8 text-center drop-shadow-lg">Frequently Asked Questions</h1>
+        <h1 className="text-4xl font-extrabold text-white mb-8 text-center">Frequently Asked Questions</h1>
         <div className="space-y-4">
           {faqs.map((faq, idx) => (
-            <div key={idx} className="border-b pb-2">
+            <div key={idx} className="border-b border-slate-700 pb-2">
               <button
-                className="w-full flex items-center justify-between text-left text-2xl font-bold text-indigo-800 mb-1 focus:outline-none focus:text-yellow-400 transition"
+                className="w-full flex items-center justify-between text-left text-2xl font-bold text-white mb-1 focus:outline-none focus:text-indigo-400 transition"
                 onClick={() => setOpenIdx(openIdx === idx ? null : idx)}
                 aria-expanded={openIdx === idx}
                 aria-controls={`faq-panel-${idx}`}
               >
                 <span className="flex items-center gap-2">
-                  <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 14h.01M16 10h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+                  <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 14h.01M16 10h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
                   {faq.question}
                 </span>
-                <svg className={`w-6 h-6 ml-2 transition-transform duration-200 ${openIdx === idx ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                <svg className={`w-6 h-6 ml-2 transition-transform duration-200 text-indigo-400 ${openIdx === idx ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
               </button>
               <div
                 id={`faq-panel-${idx}`}
                 className={`overflow-hidden transition-all duration-300 ${openIdx === idx ? 'max-h-40 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
                 aria-hidden={openIdx !== idx}
               >
-                <p className="text-gray-700 pl-10 text-lg">{faq.answer}</p>
+                <p className="text-slate-400 pl-10 text-lg">{faq.answer}</p>
               </div>
             </div>
           ))}

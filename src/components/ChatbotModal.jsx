@@ -4,7 +4,10 @@ import { CartContext } from "../context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const initialMessages = [
-  { from: "bot", text: "Hi! I'm your VoiceCart assistant. 🎙️ You can ask me about the website, use voice commands to shop, or type your question below. Try saying 'Add 2 apples' or ask me anything!" },
+  { 
+    from: "bot", 
+    text: "👋 Hi! I'm your VoiceCart AI Assistant powered by Gemini! 🎙️\n\n✨ I can help you:\n• Shop using voice commands\n• Add/remove items from cart\n• Answer questions about products\n• Guide you through the website\n\nTry saying: 'Add 2 apples to cart' or ask me anything!" 
+  },
 ];
 
 const ChatbotModal = ({ open, onClose }) => {
@@ -134,14 +137,15 @@ const ChatbotModal = ({ open, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
       <motion.div
         initial={{ opacity: 0, y: 60 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 60 }}
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-auto mb-0 md:mb-10 border border-gray-200 flex flex-col overflow-hidden"
+        className="bg-slate-800 rounded-3xl shadow-2xl shadow-indigo-500/20 w-full max-w-md mx-auto mb-0 md:mb-10 border border-slate-700 flex flex-col overflow-hidden min-h-[600px]"
       >
-        <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-purple-600 to-blue-600">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-indigo-600 to-cyan-600">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -149,41 +153,53 @@ const ChatbotModal = ({ open, onClose }) => {
               </svg>
             </div>
             <div>
-              <span className="font-bold text-lg text-white">VoiceCart Assistant</span>
-              <p className="text-xs text-white/80">Always here to help</p>
+              <span className="font-bold text-lg text-white">VoiceCart AI Assistant</span>
+              <p className="text-xs text-cyan-200 flex items-center gap-1">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <circle cx="10" cy="10" r="4"/>
+                </svg>
+                Powered by Gemini AI
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="text-white text-3xl font-bold hover:text-yellow-300 transition-colors">×</button>
+          <button onClick={onClose} className="text-white text-3xl font-bold hover:text-cyan-300 transition-colors">×</button>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-4 bg-gradient-to-br from-gray-50 to-white" style={{ maxHeight: 400 }}>
+
+        {/* Chat Messages Area */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 bg-slate-900" style={{ maxHeight: 400 }}>
           <div className="space-y-4">
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`rounded-2xl px-4 py-3 max-w-xs shadow-sm ${msg.from === "user" ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white ml-auto" : "bg-white text-gray-800 border border-gray-200"}`}>
+                <div className={`rounded-2xl px-4 py-3 max-w-xs shadow-lg ${msg.from === "user" ? "bg-gradient-to-r from-indigo-600 to-cyan-600 text-white ml-auto" : "bg-slate-800 text-slate-200 border border-slate-700"}`}>
                   {msg.text}
                 </div>
               </div>
             ))}
             {listening && (
               <div className="flex justify-start">
-                <div className="rounded-2xl px-4 py-3 bg-purple-100 text-purple-700 animate-pulse border border-purple-200">
+                <div className="rounded-2xl px-4 py-3 bg-indigo-500/20 text-indigo-300 animate-pulse border border-indigo-500/50 flex items-center gap-2">
+                  <svg className="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </svg>
                   🎤 Listening...
                 </div>
               </div>
             )}
             {error && (
               <div className="flex justify-start">
-                <div className="rounded-2xl px-4 py-3 bg-red-50 text-red-700 border border-red-200">{error}</div>
+                <div className="rounded-2xl px-4 py-3 bg-red-500/20 text-red-300 border border-red-500/50">{error}</div>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
         </div>
-        <form onSubmit={handleSend} className="flex items-center gap-2 px-6 py-4 bg-white border-t border-gray-200">
+
+        {/* Input Area */}
+        <form onSubmit={handleSend} className="flex items-center gap-2 px-6 py-4 bg-slate-800 border-t border-slate-700">
           <button
             type="button"
             onClick={listening ? stopListening : startListening}
-            className={`rounded-full p-3 shadow-lg transition-all ${listening ? "bg-red-500 text-white animate-pulse" : "bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-xl"}`}
+            className={`rounded-full p-3 shadow-lg transition-all ${listening ? "bg-red-500 text-white animate-pulse scale-110" : "bg-gradient-to-r from-indigo-600 to-cyan-600 text-white hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-105"}`}
             title={listening ? "Stop Listening" : "Start Voice Command"}
           >
             {listening ? (
@@ -198,20 +214,34 @@ const ChatbotModal = ({ open, onClose }) => {
           </button>
           <input
             type="text"
-            className="flex-1 border-2 border-gray-200 rounded-full px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-            placeholder="Type your message or use voice..."
+            className="flex-1 border-2 border-slate-600 bg-slate-700 text-white rounded-full px-4 py-3 text-base placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            placeholder="Type or use voice to chat..."
             value={input}
             onChange={e => setInput(e.target.value)}
             disabled={listening}
           />
           <button
             type="submit"
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full px-6 py-3 font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-full px-6 py-3 font-semibold shadow-lg hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={!input.trim()}
           >
-            Send
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+            </svg>
           </button>
         </form>
+
+        {/* Voice Status Indicator */}
+        {listening && (
+          <div className="px-6 py-2 bg-indigo-600/20 border-t border-indigo-500/30 flex items-center justify-center gap-2 text-indigo-300 text-sm">
+            <div className="flex gap-1">
+              <span className="w-1 h-4 bg-indigo-400 rounded-full animate-pulse" style={{animationDelay: '0ms'}}></span>
+              <span className="w-1 h-4 bg-indigo-400 rounded-full animate-pulse" style={{animationDelay: '150ms'}}></span>
+              <span className="w-1 h-4 bg-indigo-400 rounded-full animate-pulse" style={{animationDelay: '300ms'}}></span>
+            </div>
+            <span>Voice input active - speak now</span>
+          </div>
+        )}
       </motion.div>
     </div>
   );

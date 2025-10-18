@@ -19,7 +19,6 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically send the form data to your backend
     console.log("Form submitted:", formData);
     setIsSubmitted(true);
     setTimeout(() => {
@@ -88,9 +87,9 @@ const Contact = () => {
   ];
 
   return (
-    <div className="min-h-screen pt-20">
+    <div className="min-h-screen pt-20 bg-slate-900">
       {/* Hero Section */}
-      <section className="relative py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50">
+      <section className="relative py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -98,10 +97,12 @@ const Contact = () => {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-5xl md:text-6xl font-bold mb-6">
-              Get in <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Touch</span>
+              <span className="bg-gradient-to-r from-indigo-500 to-cyan-500 bg-clip-text text-transparent">
+                Get in Touch
+              </span>
             </h1>
-            <p className="text-xl text-gray-600">
-              Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              Have a question? We're here to help. Reach out to our team anytime.
             </p>
           </motion.div>
         </div>
@@ -117,14 +118,14 @@ const Contact = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100 text-center"
+                className="bg-slate-800 rounded-2xl p-6 shadow-lg hover:shadow-indigo-500/20 transition-all border border-slate-700 text-center hover:border-indigo-500"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl text-white mb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-2xl text-white mb-4">
                   {info.icon}
                 </div>
-                <h3 className="font-bold text-lg mb-2">{info.title}</h3>
-                <p className="text-gray-800 font-semibold mb-1">{info.detail}</p>
-                <p className="text-sm text-gray-600">{info.description}</p>
+                <h3 className="font-bold text-lg mb-2 text-white">{info.title}</h3>
+                <p className="text-indigo-400 font-semibold mb-1">{info.detail}</p>
+                <p className="text-sm text-slate-400">{info.description}</p>
               </motion.div>
             ))}
           </div>
@@ -141,10 +142,10 @@ const Contact = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold mb-6">Send us a Message</h2>
+              <h2 className="text-3xl font-bold mb-6 text-white">Send us a Message</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
                     Your Name
                   </label>
                   <input
@@ -153,13 +154,13 @@ const Contact = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-slate-500 transition-all"
                     placeholder="John Doe"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
                     Email Address
                   </label>
                   <input
@@ -168,13 +169,13 @@ const Contact = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-slate-500 transition-all"
                     placeholder="john@example.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
                     Subject
                   </label>
                   <input
@@ -183,13 +184,13 @@ const Contact = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-slate-500 transition-all"
                     placeholder="How can we help?"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
                     Message
                   </label>
                   <textarea
@@ -198,25 +199,25 @@ const Contact = () => {
                     onChange={handleChange}
                     required
                     rows="5"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none resize-none"
-                    placeholder="Tell us what's on your mind..."
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-slate-500 resize-none transition-all"
+                    placeholder="Tell us more..."
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-xl hover:shadow-xl hover:scale-[1.02] transition-all"
+                  className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-indigo-500/30 hover:scale-105 transition-all duration-200"
                 >
-                  Send Message
+                  {isSubmitted ? "Message Sent! ✓" : "Send Message"}
                 </button>
 
                 {isSubmitted && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-center font-semibold"
+                    className="p-4 bg-green-500/10 border border-green-500/50 text-green-400 rounded-xl text-center"
                   >
-                    ✓ Message sent successfully! We'll get back to you soon.
+                    Thank you! We'll get back to you soon.
                   </motion.div>
                 )}
               </form>
@@ -228,50 +229,34 @@ const Contact = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold mb-6">Frequently Asked Questions</h2>
-              <div className="space-y-4">
+              <h2 className="text-3xl font-bold mb-6 text-white">Frequently Asked Questions</h2>
+              <div className="space-y-6">
                 {faqs.map((faq, index) => (
                   <div
                     key={index}
-                    className="bg-white rounded-2xl p-6 shadow-md border border-gray-100"
+                    className="bg-slate-800 p-6 rounded-xl border border-slate-700 hover:border-indigo-500 transition-colors"
                   >
-                    <h3 className="font-bold text-lg mb-3 text-gray-800">
-                      {faq.question}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      {faq.answer}
-                    </p>
+                    <h3 className="text-lg font-bold text-white mb-3">{faq.question}</h3>
+                    <p className="text-slate-400">{faq.answer}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-8 text-white">
-                <h3 className="text-2xl font-bold mb-3">Still have questions?</h3>
-                <p className="mb-6 text-white/90">
-                  Can't find the answer you're looking for? Please chat to our friendly team.
+              <div className="mt-8 p-6 bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 rounded-2xl border border-indigo-500/20">
+                <h3 className="text-xl font-bold text-white mb-2">Need Immediate Help?</h3>
+                <p className="text-slate-400 mb-4">
+                  Our AI-powered voice assistant is available 24/7 to help you shop faster.
                 </p>
-                <button className="px-6 py-3 bg-white text-purple-600 font-bold rounded-full hover:shadow-xl transition-all">
-                  Open Live Chat
-                </button>
+                <div className="flex flex-wrap gap-3">
+                  <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors">
+                    Start Voice Shopping
+                  </button>
+                  <button className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg border border-slate-700 transition-colors">
+                    View Products
+                  </button>
+                </div>
               </div>
             </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Map Section (Placeholder) */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-3xl h-96 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-6xl mb-4">🗺️</div>
-              <p className="text-xl font-semibold text-gray-700">
-                Interactive Map Coming Soon
-              </p>
-              <p className="text-gray-600 mt-2">
-                123 Tech Street, San Francisco, CA 94102
-              </p>
-            </div>
           </div>
         </div>
       </section>

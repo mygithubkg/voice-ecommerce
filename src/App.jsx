@@ -9,6 +9,8 @@ import Products from "./pages/Products";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import ChatbotModal from "./components/ChatbotModal";
 import { CartProvider, useCart } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
@@ -22,7 +24,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
-          <div className="min-h-screen w-full bg-white flex flex-col">
+          <div className="min-h-screen w-full bg-slate-900 flex flex-col">
             <Navbar />
 
             {/* Main Page Routes */}
@@ -35,6 +37,8 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/faq" element={<FAQ />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/settings" element={<Settings />} />
               </Routes>
             </div>
 
