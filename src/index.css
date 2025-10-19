@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./App.css";
 
 /* Modern Dark Theme Voice Commerce Palette */
 :root {
