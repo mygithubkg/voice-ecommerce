@@ -37,7 +37,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-300 antialiased">
       {/* Hero Section */}
-      <section className="relative pt-24 pb-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
+  <section className="relative pt-12 md:pt-16 pb-20 md:pb-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Grid Background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 opacity-20">
@@ -47,65 +47,65 @@ const LandingPage = () => {
             }}></div>
           </div>
           {/* Gradient Orbs */}
-          <div className="absolute top-20 left-10 w-96 h-96 bg-indigo-500/20 rounded-full filter blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500/20 rounded-full filter blur-3xl"></div>
+          <div className="absolute top-10 md:top-20 left-5 md:left-10 w-64 h-64 md:w-96 md:h-96 bg-indigo-500/20 rounded-full filter blur-3xl"></div>
+          <div className="absolute bottom-10 md:bottom-20 right-5 md:right-10 w-64 h-64 md:w-96 md:h-96 bg-cyan-500/20 rounded-full filter blur-3xl"></div>
         </div>
 
         <div className="max-w-7xl mx-auto relative">
-          <div className="grid lg:grid-cols-2 gap-16 items-center min-h-[600px]">
+          <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center min-h-[500px] md:min-h-[600px]">
             {/* Left Content */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="inline-block mb-6">
-                <span className="px-4 py-2 bg-slate-800 border border-slate-700 text-indigo-400 rounded-full text-sm font-semibold inline-flex items-center gap-2">
-                  <MicrophoneIcon className="w-4 h-4" />
+              <div className="inline-block mb-4 md:mb-6">
+                <span className="px-3 md:px-4 py-2 bg-slate-800 border border-slate-700 text-indigo-400 rounded-full text-xs sm:text-sm font-semibold inline-flex items-center gap-2">
+                  <MicrophoneIcon className="w-3 h-3 md:w-4 md:h-4" />
                   Voice-Powered Shopping
                 </span>
               </div>
               
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight text-white">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-4 md:mb-6 leading-tight text-white">
                 Shop with Your
                 <span className="block bg-gradient-to-r from-indigo-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent">
                   Voice
                 </span>
               </h1>
               
-              <p className="text-xl text-slate-400 mb-8 leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-slate-400 mb-6 md:mb-8 leading-relaxed">
                 Experience the future of e-commerce. Add items to your cart, ask questions, and complete purchases—all hands-free with our AI-powered voice assistant.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                 <Link
                   to="/products"
-                  className="px-8 py-4 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold rounded-full hover:shadow-2xl hover:shadow-indigo-500/50 hover:scale-105 transition-all duration-200 text-center"
+                  className="px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold rounded-full hover:shadow-2xl hover:shadow-indigo-500/50 hover:scale-105 transition-all duration-200 text-center text-sm md:text-base"
                 >
                   Start Shopping
                 </Link>
                 <button
                   onClick={() => setIsChatOpen(true)}
-                  className="px-8 py-4 bg-slate-800 border-2 border-slate-700 text-slate-300 font-semibold rounded-full hover:border-indigo-500 hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                  className="px-6 md:px-8 py-3 md:py-4 bg-slate-800 border-2 border-slate-700 text-slate-300 font-semibold rounded-full hover:border-indigo-500 hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 text-sm md:text-base"
                 >
-                  <MicrophoneIcon className="w-5 h-5" />
+                  <MicrophoneIcon className="w-4 h-4 md:w-5 md:h-5" />
                   <span>Try Voice Demo</span>
                 </button>
               </div>
 
               {/* Stats */}
-              <div className="mt-12 grid grid-cols-3 gap-6">
+              <div className="mt-8 md:mt-12 grid grid-cols-3 gap-4 md:gap-6">
                 <div>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">50+</div>
-                  <div className="text-sm text-slate-500">Products</div>
+                  <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">50+</div>
+                  <div className="text-xs md:text-sm text-slate-500">Products</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">24/7</div>
-                  <div className="text-sm text-slate-500">AI Support</div>
+                  <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">24/7</div>
+                  <div className="text-xs md:text-sm text-slate-500">AI Support</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">99%</div>
-                  <div className="text-sm text-slate-500">Accuracy</div>
+                  <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">99%</div>
+                  <div className="text-xs md:text-sm text-slate-500">Accuracy</div>
                 </div>
               </div>
             </motion.div>
@@ -174,21 +174,21 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-slate-800/30">
+      <section className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 bg-slate-800/30">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-white">
               Why Choose <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">VoiceCart</span>
             </h2>
-            <p className="text-xl text-slate-400">Experience shopping like never before with cutting-edge technology</p>
+            <p className="text-base sm:text-lg md:text-xl text-slate-400">Experience shopping like never before with cutting-edge technology</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8">
+          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
@@ -196,13 +196,13 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="group relative bg-slate-800 p-8 rounded-2xl hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 border border-slate-700 hover:border-indigo-500"
+                className="group relative bg-slate-800 p-6 md:p-8 rounded-2xl hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 border border-slate-700 hover:border-indigo-500"
               >
-                <div className={`inline-block p-4 bg-gradient-to-r ${feature.gradient} rounded-2xl mb-4 text-white group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`inline-block p-3 md:p-4 bg-gradient-to-r ${feature.gradient} rounded-2xl mb-4 text-white group-hover:scale-110 transition-transform duration-300`}>
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
-                <p className="text-slate-400">{feature.description}</p>
+                <h3 className="text-lg md:text-xl font-bold mb-3 text-white">{feature.title}</h3>
+                <p className="text-sm md:text-base text-slate-400">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -210,23 +210,23 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
+      <section className="py-16 md:py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-3xl p-12 shadow-2xl"
+            className="bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-2xl md:rounded-3xl p-8 md:p-12 shadow-2xl"
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 md:mb-6">
               Ready to Transform Your Shopping Experience?
             </h2>
-            <p className="text-xl text-white/90 mb-8">
+            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 md:mb-8">
               Join thousands of users who are already shopping smarter with voice commands
             </p>
             <Link
               to="/products"
-              className="inline-block px-10 py-5 bg-white text-indigo-600 font-bold rounded-full hover:shadow-2xl hover:scale-105 transition-all duration-200 text-lg"
+              className="inline-block px-8 md:px-10 py-4 md:py-5 bg-white text-indigo-600 font-bold rounded-full hover:shadow-2xl hover:scale-105 transition-all duration-200 text-base md:text-lg"
             >
               Get Started Now →
             </Link>

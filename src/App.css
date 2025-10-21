@@ -2,10 +2,11 @@
 
 html, body {
   width: 100%;
-  font-family: 'Inter', 'Roboto', 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: 'Source Sans 3', 'Inter', 'Roboto', 'Segoe UI', sans-serif;
   background: #0f172a;
   color: #cbd5e1;
   letter-spacing: 0.01em;
+  line-height: 1.65;
 }
 
 ::-webkit-scrollbar {
@@ -28,4 +29,27 @@ html, body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.page-container-base {
+  width: 100%;
+  margin: 0 auto;
+  padding: clamp(5rem, 8vw, 6.5rem) clamp(1.5rem, 5vw, 3.5rem) clamp(3rem, 7vw, 4.5rem);
+}
+
+.page-container-standard {
+  max-width: min(1200px, 100%);
+}
+
+.page-container-full {
+  max-width: min(1600px, 100%);
+}
+
+@media (max-width: 768px) {
+  .page-container-base {
+    padding-top: clamp(4.5rem, 12vw, 5.5rem);
+    padding-left: clamp(1.25rem, 6vw, 2.25rem);
+    padding-right: clamp(1.25rem, 6vw, 2.25rem);
+    padding-bottom: clamp(2.5rem, 10vw, 3.5rem);
+  }
 }

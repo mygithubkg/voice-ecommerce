@@ -1,0 +1,435 @@
+
+@media (max-width: 640px) {
+  :root {
+    font-size: 14px;
+  }
+  
+  h1 {  
+    font-size: 2rem !important;
+  }
+  
+  h2 {
+    font-size: 1.75rem !important;
+  }
+  
+  h3 {
+    font-size: 1.5rem !important;
+  }
+  
+  h4 {
+    font-size: 1.25rem !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  :root {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    font-size: 16px;
+  }
+}
+
+/* Container responsive widths */
+.container-responsive {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    max-width: 768px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    max-width: 1024px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive {
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container-responsive {
+    max-width: 1536px;
+  }
+}
+
+/* Touch-friendly buttons for mobile */
+@media (max-width: 768px) {
+  button, a[role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 1rem;
+  }
+  
+  /* Ensure proper button padding on mobile */
+  button:not(.p-2):not(.p-3):not(.p-4) {
+    padding: 0.75rem 1.5rem;
+  }
+}
+
+/* Better mobile table handling */
+@media (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Stack table cells on very small screens */
+  table thead {
+    display: none;
+  }
+  
+  table tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid #334155;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+  }
+  
+  table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    text-align: right;
+  }
+  
+  table td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    text-align: left;
+    color: #6366f1;
+  }
+}
+
+/* Responsive images */
+img, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Better mobile scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix for mobile viewport height */
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 640px) {
+  /* Reduce padding on mobile */
+  .py-10 {
+    padding-top: 2.5rem !important;
+    padding-bottom: 2.5rem !important;
+  }
+  
+  .py-16 {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
+  
+  .py-20 {
+    padding-top: 4rem !important;
+    padding-bottom: 4rem !important;
+  }
+  
+  .py-24 {
+    padding-top: 4rem !important;
+    padding-bottom: 4rem !important;
+  }
+  
+  .py-32 {
+    padding-top: 5rem !important;
+    padding-bottom: 5rem !important;
+  }
+  
+  /* Reduce gap spacing */
+  .gap-8 {
+    gap: 1.5rem !important;
+  }
+  
+  .gap-12 {
+    gap: 2rem !important;
+  }
+  
+  .gap-16 {
+    gap: 2.5rem !important;
+  }
+  
+  /* Better mobile margins */
+  .mb-10 {
+    margin-bottom: 2rem !important;
+  }
+  
+  .mb-12 {
+    margin-bottom: 2.5rem !important;
+  }
+  
+  /* Mobile text sizes */
+  .text-5xl {
+    font-size: 2.5rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .text-6xl {
+    font-size: 2.75rem !important;
+    line-height: 1.1 !important;
+  }
+  
+  .text-7xl {
+    font-size: 3rem !important;
+    line-height: 1 !important;
+  }
+  
+  .text-4xl {
+    font-size: 2rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .text-3xl {
+    font-size: 1.75rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  /* Adjust max widths */
+  .max-w-7xl {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .max-w-6xl {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .max-w-4xl {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .py-20 {
+    padding-top: 5rem !important;
+    padding-bottom: 5rem !important;
+  }
+  
+  .py-24 {
+    padding-top: 6rem !important;
+    padding-bottom: 6rem !important;
+  }
+  
+  .text-5xl {
+    font-size: 3rem !important;
+  }
+  
+  .text-6xl {
+    font-size: 3.5rem !important;
+  }
+}
+
+/* Floating button responsiveness */
+@media (max-width: 640px) {
+  .fixed.bottom-8.right-8 {
+    bottom: 1rem !important;
+    right: 1rem !important;
+    padding: 0.875rem !important;
+  }
+  
+  .fixed.bottom-8.right-8 svg {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+  }
+}
+
+/* Grid responsiveness */
+@media (max-width: 640px) {
+  .grid-cols-1.sm\:grid-cols-2.md\:grid-cols-3.lg\:grid-cols-4 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+  
+  .grid.xl\:grid-cols-4 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+  
+  .grid.lg\:grid-cols-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Modal responsiveness */
+@media (max-width: 640px) {
+  .fixed.inset-0 > div {
+    margin: 1rem !important;
+    max-width: calc(100% - 2rem) !important;
+  }
+  
+  .rounded-3xl {
+    border-radius: 1.5rem !important;
+  }
+  
+  .rounded-2xl {
+    border-radius: 1rem !important;
+  }
+}
+
+/* Form responsiveness */
+@media (max-width: 640px) {
+  input, textarea, select {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+  
+  form .space-y-6 {
+    gap: 1rem !important;
+  }
+}
+
+/* Navigation spacing */
+@media (max-width: 768px) {
+  nav .max-w-7xl {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+/* Card responsiveness */
+@media (max-width: 640px) {
+  .rounded-3xl.shadow-2xl {
+    border-radius: 1.5rem !important;
+  }
+  
+  .p-10 {
+    padding: 1.5rem !important;
+  }
+  
+  .p-8 {
+    padding: 1.25rem !important;
+  }
+  
+  .p-7 {
+    padding: 1.25rem !important;
+  }
+  
+  .p-6 {
+    padding: 1rem !important;
+  }
+}
+
+/* Width overrides for better mobile experience */
+@media (max-width: 640px) {
+  .w-4\/5 {
+    width: 95% !important;
+  }
+  
+  .max-w-md {
+    max-width: 95% !important;
+  }
+}
+
+/* Better mobile hero sections */
+@media (max-width: 768px) {
+  .min-h-\[600px\] {
+    min-height: auto !important;
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+  }
+}
+
+/* Flexbox adjustments for mobile */
+@media (max-width: 640px) {
+  .flex-col.sm\:flex-row {
+    flex-direction: column !important;
+  }
+  
+  .space-x-4 > *:not(:first-child) {
+    margin-left: 0 !important;
+  }
+  
+  .flex.items-center.space-x-4 {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  
+  .flex.items-center.space-x-4 > * {
+    margin-left: 0 !important;
+    margin-top: 0.5rem;
+  }
+}
+
+/* Improve readability on small screens */
+@media (max-width: 640px) {
+  body {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  p {
+    line-height: 1.7;
+  }
+}
+
+/* Stats grid responsiveness */
+@media (max-width: 640px) {
+  .grid.grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+  
+  .grid.grid-cols-3 .text-3xl {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* Better mobile animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Landscape mobile adjustments */
+@media (max-width: 896px) and (orientation: landscape) {
+  .min-h-screen {
+    min-height: auto !important;
+  }
+  
+  .py-20 {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+  }
+}

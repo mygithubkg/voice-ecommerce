@@ -15,6 +15,8 @@ import ChatbotModal from "./components/ChatbotModal";
 import { CartProvider, useCart } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import VoiceCommand from "./components/VoiceCommand";
+import PageContainer from "./components/PageContainer";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   const [showVoice, setShowVoice] = useState(false);
@@ -22,25 +24,26 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <CartProvider>
           <div className="min-h-screen w-full bg-slate-900 flex flex-col">
             <Navbar />
 
             {/* Main Page Routes */}
-            <div className="flex-1">
+            <main className="flex-1 w-full">
               <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/settings" element={<Settings />} />
+                <Route path="/" element={<PageContainer fullWidth><LandingPage /></PageContainer>} />
+                <Route path="/home" element={<PageContainer><Home /></PageContainer>} />
+                <Route path="/products" element={<PageContainer><Products /></PageContainer>} />
+                <Route path="/cart" element={<PageContainer><CartPage /></PageContainer>} />
+                <Route path="/about" element={<PageContainer fullWidth><About /></PageContainer>} />
+                <Route path="/contact" element={<PageContainer><Contact /></PageContainer>} />
+                <Route path="/faq" element={<PageContainer><FAQ /></PageContainer>} />
+                <Route path="/profile" element={<PageContainer><Profile /></PageContainer>} />
+                <Route path="/settings" element={<PageContainer><Settings /></PageContainer>} />
               </Routes>
-            </div>
+            </main>
 
             {/* Voice Modal */}
             {showVoice && (
@@ -60,11 +63,11 @@ function App() {
             {/* Chatbot Floating Button */}
             <button
               onClick={() => setChatbotOpen(true)}
-              className="fixed z-50 bottom-8 right-8 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full shadow-2xl p-5 flex items-center gap-2 hover:scale-110 transition-all border-4 border-white"
+              className="fixed z-50 bottom-6 right-6 sm:bottom-8 sm:right-8 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full shadow-2xl p-4 sm:p-5 flex items-center gap-2 hover:scale-110 transition-all border-2 sm:border-4 border-white"
               style={{ boxShadow: "0 12px 40px rgba(147, 51, 234, 0.4)" }}
               title="Open Voice Assistant"
             >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
               </svg>
             </button>

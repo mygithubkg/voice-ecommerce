@@ -7,7 +7,7 @@ import CTA from "./sections/CTA";
 
 const About = () => {
   return (
-    <div className="bg-slate-900 text-slate-300 antialiased min-h-screen pt-20">
+  <div className="bg-slate-900 text-slate-300 antialiased min-h-screen">
       <Hero />
       <main>
         <Story />

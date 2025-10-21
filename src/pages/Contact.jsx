@@ -87,21 +87,21 @@ const Contact = () => {
   ];
 
   return (
-    <div className="min-h-screen pt-20 bg-slate-900">
+  <div className="min-h-screen bg-slate-900">
       {/* Hero Section */}
-      <section className="relative py-20 px-4 sm:px-6 lg:px-8">
+      <section className="relative py-16 md:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 md:mb-6">
               <span className="bg-gradient-to-r from-indigo-500 to-cyan-500 bg-clip-text text-transparent">
                 Get in Touch
               </span>
             </h1>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-2xl mx-auto">
               Have a question? We're here to help. Reach out to our team anytime.
             </p>
           </motion.div>
@@ -109,23 +109,23 @@ const Contact = () => {
       </section>
 
       {/* Contact Info Cards */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 -mt-12 relative z-10">
+      <section className="py-8 md:py-12 px-4 sm:px-6 lg:px-8 -mt-8 md:-mt-12 relative z-10">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {contactInfo.map((info, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-slate-800 rounded-2xl p-6 shadow-lg hover:shadow-indigo-500/20 transition-all border border-slate-700 text-center hover:border-indigo-500"
+                className="bg-slate-800 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg hover:shadow-indigo-500/20 transition-all border border-slate-700 text-center hover:border-indigo-500"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-2xl text-white mb-4">
+                <div className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-xl md:rounded-2xl text-white mb-3 md:mb-4">
                   {info.icon}
                 </div>
-                <h3 className="font-bold text-lg mb-2 text-white">{info.title}</h3>
-                <p className="text-indigo-400 font-semibold mb-1">{info.detail}</p>
-                <p className="text-sm text-slate-400">{info.description}</p>
+                <h3 className="font-bold text-base md:text-lg mb-2 text-white">{info.title}</h3>
+                <p className="text-indigo-400 font-semibold mb-1 text-sm md:text-base">{info.detail}</p>
+                <p className="text-xs md:text-sm text-slate-400">{info.description}</p>
               </motion.div>
             ))}
           </div>
@@ -133,17 +133,17 @@ const Contact = () => {
       </section>
 
       {/* Contact Form Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-16 md:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-8 md:gap-12">
             {/* Left - Form */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold mb-6 text-white">Send us a Message</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-4 md:mb-6 text-white">Send us a Message</h2>
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">
                     Your Name
@@ -154,7 +154,7 @@ const Contact = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-slate-500 transition-all"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-slate-500 transition-all text-base"
                     placeholder="John Doe"
                   />
                 </div>
@@ -169,7 +169,7 @@ const Contact = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-slate-500 transition-all"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-slate-500 transition-all text-base"
                     placeholder="john@example.com"
                   />
                 </div>
@@ -184,7 +184,7 @@ const Contact = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-slate-500 transition-all"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-slate-500 transition-all text-base"
                     placeholder="How can we help?"
                   />
                 </div>
@@ -199,14 +199,14 @@ const Contact = () => {
                     onChange={handleChange}
                     required
                     rows="5"
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-slate-500 resize-none transition-all"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-white placeholder-slate-500 resize-none transition-all text-base"
                     placeholder="Tell us more..."
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-indigo-500/30 hover:scale-105 transition-all duration-200"
+                  className="w-full px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-indigo-500/30 hover:scale-105 transition-all duration-200 text-base"
                 >
                   {isSubmitted ? "Message Sent! ✓" : "Send Message"}
                 </button>
@@ -215,7 +215,7 @@ const Contact = () => {
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-4 bg-green-500/10 border border-green-500/50 text-green-400 rounded-xl text-center"
+                    className="p-4 bg-green-500/10 border border-green-500/50 text-green-400 rounded-xl text-center text-sm"
                   >
                     Thank you! We'll get back to you soon.
                   </motion.div>
@@ -229,29 +229,29 @@ const Contact = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold mb-6 text-white">Frequently Asked Questions</h2>
-              <div className="space-y-6">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-4 md:mb-6 text-white">Frequently Asked Questions</h2>
+              <div className="space-y-4 md:space-y-6">
                 {faqs.map((faq, index) => (
                   <div
                     key={index}
-                    className="bg-slate-800 p-6 rounded-xl border border-slate-700 hover:border-indigo-500 transition-colors"
+                    className="bg-slate-800 p-5 md:p-6 rounded-xl border border-slate-700 hover:border-indigo-500 transition-colors"
                   >
-                    <h3 className="text-lg font-bold text-white mb-3">{faq.question}</h3>
-                    <p className="text-slate-400">{faq.answer}</p>
+                    <h3 className="text-base md:text-lg font-bold text-white mb-2 md:mb-3">{faq.question}</h3>
+                    <p className="text-sm md:text-base text-slate-400">{faq.answer}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-8 p-6 bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 rounded-2xl border border-indigo-500/20">
-                <h3 className="text-xl font-bold text-white mb-2">Need Immediate Help?</h3>
-                <p className="text-slate-400 mb-4">
+              <div className="mt-6 md:mt-8 p-5 md:p-6 bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 rounded-xl md:rounded-2xl border border-indigo-500/20">
+                <h3 className="text-lg md:text-xl font-bold text-white mb-2">Need Immediate Help?</h3>
+                <p className="text-sm md:text-base text-slate-400 mb-4">
                   Our AI-powered voice assistant is available 24/7 to help you shop faster.
                 </p>
-                <div className="flex flex-wrap gap-3">
-                  <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+                  <button className="px-5 md:px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors text-sm md:text-base">
                     Start Voice Shopping
                   </button>
-                  <button className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg border border-slate-700 transition-colors">
+                  <button className="px-5 md:px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg border border-slate-700 transition-colors text-sm md:text-base">
                     View Products
                   </button>
                 </div>

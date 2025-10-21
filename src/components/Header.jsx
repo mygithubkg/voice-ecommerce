@@ -113,7 +113,7 @@ const ModernHeader = ({ onVoiceClick }) => {
       animate="visible"
       className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-slate-200/80"
     >
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-6 lg:px-8 py-3">
+    <div className="max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-6 lg:px-8 py-3">
         {/* Logo and Branding */}
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Link to="/" className="flex items-center gap-2 text-slate-900 group">
