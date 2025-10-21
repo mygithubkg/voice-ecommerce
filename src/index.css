@@ -1,10 +1,8 @@
-/* STEP 1: Import Tailwind's base, components, and utilities.
-  This MUST come first. It includes the "preflight" CSS reset that
-  removes default margins and paddings, which is the correct approach.
+/* STEP 1: Use the modern @tailwind directives.
+  This is the correct syntax for modern Vite projects and will fix the 
+  "Package path ./base is not exported" error.
 */
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@import "tailwindcss";
 
 /* STEP 2: Define your global theme variables and base styles.
   It's better to apply these to the `body` or `:root` instead of using
@@ -42,9 +40,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 p {
-  /* Instead of `margin-bottom: 1rem;`, you should apply a utility class like `mb-4` 
-    to your <p> tags in your JSX for more control. 
-    However, if you want ALL paragraphs to have this, you can use CSS properties here.
+  /* The error "Cannot apply unknown utility class `mb-4`" is caused by using `@apply` here.
+    Using a standard CSS property is safer for base element styles and avoids this error.
   */
   margin-bottom: 1rem;
   line-height: 1.625; /* matches Tailwind's leading-relaxed */
@@ -108,3 +105,4 @@ img {
     animation-delay: 4s;
   }
 }
+

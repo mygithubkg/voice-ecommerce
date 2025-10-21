@@ -1,4 +1,6 @@
 // Simple SVG icons for demo purposes
+import React from "react";  
+
 export const icons = {
   Apple: (
     <svg viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 text-red-400">
