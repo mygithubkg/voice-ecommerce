@@ -1,77 +1,11 @@
 import React, { useContext } from "react";
 import { CartContext } from "../context/CartContext";
 import { motion } from "framer-motion";
+import { getAllProducts, getAllCategories } from "../data/productlist";
 
-const products = [
-  { id: 1, name: "Apple", price: 1.5 },
-  { id: 2, name: "Mango", price: 2.0 },
-  { id: 3, name: "Banana", price: 1.0 },
-  { id: 4, name: "Orange", price: 1.3 },
-  { id: 5, name: "Grapes", price: 1.8 },
-  { id: 6, name: "Milk", price: 1.2 },
-  { id: 7, name: "Cheese", price: 2.5 },
-  { id: 8, name: "Butter", price: 2.0 },
-  { id: 9, name: "Yogurt", price: 1.7 },
-  { id: 10, name: "Sugar", price: 0.8 },
-  { id: 11, name: "Salt", price: 0.5 },
-  { id: 12, name: "Rice", price: 1.0 },
-  { id: 13, name: "Wheat Flour", price: 1.1 },
-  { id: 14, name: "Oil", price: 2.3 },
-  { id: 15, name: "Tea", price: 1.4 },
-  { id: 16, name: "Coffee", price: 2.0 },
-  { id: 17, name: "Juice", price: 1.9 },
-  { id: 18, name: "Biscuits", price: 1.0 },
-  { id: 19, name: "Chips", price: 1.3 },
-  { id: 20, name: "Popcorn", price: 1.5 },
-];
-
-const categories = [
-  {
-    name: "Fruits",
-    products: [
-      { id: 1, name: "Apple", price: 1.5 },
-      { id: 2, name: "Mango", price: 2.0 },
-      { id: 3, name: "Banana", price: 1.0 },
-      { id: 4, name: "Orange", price: 1.3 },
-      { id: 5, name: "Grapes", price: 1.8 },
-    ],
-  },
-  {
-    name: "Dairy",
-    products: [
-      { id: 6, name: "Milk", price: 1.2 },
-      { id: 7, name: "Cheese", price: 2.5 },
-      { id: 8, name: "Butter", price: 2.0 },
-      { id: 9, name: "Yogurt", price: 1.7 },
-    ],
-  },
-  {
-    name: "Groceries",
-    products: [
-      { id: 10, name: "Sugar", price: 0.8 },
-      { id: 11, name: "Salt", price: 0.5 },
-      { id: 12, name: "Rice", price: 1.0 },
-      { id: 13, name: "Wheat Flour", price: 1.1 },
-      { id: 14, name: "Oil", price: 2.3 },
-    ],
-  },
-  {
-    name: "Beverages",
-    products: [
-      { id: 15, name: "Tea", price: 1.4 },
-      { id: 16, name: "Coffee", price: 2.0 },
-      { id: 17, name: "Juice", price: 1.9 },
-    ],
-  },
-  {
-    name: "Snacks",
-    products: [
-      { id: 18, name: "Biscuits", price: 1.0 },
-      { id: 19, name: "Chips", price: 1.3 },
-      { id: 20, name: "Popcorn", price: 1.5 },
-    ],
-  },
-];
+// Use centralized product catalog
+const products = getAllProducts();
+const categories = getAllCategories();
 
 const ProductCard = ({ product, onAdd }) => (
   <motion.div
@@ -92,7 +26,7 @@ const ProductCard = ({ product, onAdd }) => (
     <p className="text-indigo-600 font-semibold mb-3 text-base">${product.price.toFixed(2)}</p>
     <button
       onClick={() => onAdd(product, 1)}
-      className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-full font-semibold shadow hover:from-blue-700 hover:to-indigo-700 transition-colors duration-200 w-full text-base"
+  className="bg-linear-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-full font-semibold shadow hover:from-blue-700 hover:to-indigo-700 transition-colors duration-200 w-full text-base"
     >
       Add to Cart
     </button>

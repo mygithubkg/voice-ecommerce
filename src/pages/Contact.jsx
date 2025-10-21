@@ -35,7 +35,7 @@ const Contact = () => {
         </svg>
       ),
       title: "Email Us",
-      detail: "support@voicecart.com",
+      detail: "karrtikgupta9@gmail.com",
       description: "Send us an email anytime"
     },
     {
@@ -45,7 +45,7 @@ const Contact = () => {
         </svg>
       ),
       title: "Call Us",
-      detail: "+1 (555) 123-4567",
+      detail: "+91 555 123-XXXX",
       description: "Mon-Fri from 8am to 6pm"
     },
     {
@@ -56,7 +56,7 @@ const Contact = () => {
         </svg>
       ),
       title: "Visit Us",
-      detail: "123 Tech Street, SF",
+      detail: "new Delhi, Delhi",
       description: "Come say hello"
     },
     {

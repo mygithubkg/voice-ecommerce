@@ -1,19 +1,55 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { CartContext } from "../context/CartContext";
-import generateInvoice from "../components/InvoiceGenerator";
+import { useAuth } from "../context/AuthContext";
+import generateInvoice from "../components/InvoiceGenerator"; // Assuming this file exists
 import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
   const { items, removeFromCart, setQuantity, clearCart } = useContext(CartContext);
+  const { user, userProfile } = useAuth();
   const navigate = useNavigate();
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const [buyer, setBuyer] = useState({ name: "", email: "", phone: "", address: "" });
   const [step, setStep] = useState(0);
   const [touched, setTouched] = useState({});
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  // Auto-fill buyer information from user profile when available
+  useEffect(() => {
+    if (user && userProfile) {
+      setBuyer({
+        name: userProfile.displayName || user.displayName || "",
+        email: user.email || "",
+        phone: userProfile.phone || "",
+        address: userProfile.address || ""
+      });
+    }
+  }, [user, userProfile]);
+
+  const handleProceedToBilling = () => {
+    // Check if user is logged in before proceeding to billing
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
+    setStep(1);
+  };
+
+  const handleLoginRedirect = () => {
+    // Navigate to home page where user can sign in
+    navigate("/");
+  };
 
   const handleGenerate = async () => {
     try {
-      await generateInvoice(items, total, buyer);
+      // Make sure generateInvoice is a real function you've imported
+      if (generateInvoice) {
+         await generateInvoice(items, total, buyer);
+      } else {
+        console.warn("generateInvoice function is not imported or defined.");
+        // Fallback for demo
+        alert("Invoice generated (simulated)!");
+      }
       clearCart();
       navigate("/");
     } catch (err) {
@@ -30,7 +66,7 @@ const CartPage = () => {
   };
 
   return (
-  <div className="min-h-screen bg-slate-900 py-8 md:py-10 px-2 sm:px-4 md:px-8">
+    <div className="min-h-screen bg-slate-900 py-8 md:py-10 px-2 sm:px-4 md:px-8">
       <div className="w-[95%] md:w-[90%] lg:w-4/5 max-w-[1600px] mx-auto text-base sm:text-lg">
         {/* Stepper */}
         <div className="flex items-center justify-center mb-8 md:mb-10">
@@ -43,8 +79,11 @@ const CartPage = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-12">
-          {/* CART SECTION */}
-          <div className="lg:col-span-2 bg-slate-800 rounded-2xl md:rounded-3xl shadow-2xl p-5 md:p-10 border border-slate-700">
+          
+          {/* FIX #1: This entire div is now hidden on small screens if step is 1
+            This prevents the cart from showing up underneath the billing form on mobile.
+          */}
+          <div className={`${step === 1 ? 'hidden lg:block' : 'block'} lg:col-span-2 bg-slate-800 rounded-2xl md:rounded-3xl shadow-2xl p-5 md:p-10 border border-slate-700`}>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-6 md:mb-8 tracking-wide flex items-center gap-2 md:gap-3">
               <svg className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7A2 2 0 007.48 19h8.04a2 2 0 001.83-1.3L17 13M7 13V6h13" />
@@ -55,7 +94,7 @@ const CartPage = () => {
               <p className="text-slate-400 text-base md:text-lg">Your cart is empty.</p>
             ) : (
               <div className="overflow-x-auto -mx-5 md:mx-0">
-                {/* Desktop Table View */}
+                {/* Desktop Table View (Correctly hidden on mobile by `hidden md:table`) */}
                 <table className="hidden md:table min-w-full text-left border-separate border-spacing-y-2">
                   <thead>
                     <tr className="bg-slate-700">
@@ -114,7 +153,7 @@ const CartPage = () => {
                   </tbody>
                 </table>
                 
-                {/* Mobile Card View */}
+                {/* Mobile Card View (Correctly shown on mobile by `md:hidden`) */}
                 <div className="md:hidden space-y-4 px-5">
                   {items.map((item, idx) => (
                     <div key={item.id} className="bg-slate-700/50 rounded-xl p-4 shadow">
@@ -167,19 +206,24 @@ const CartPage = () => {
             </div>
             {items.length > 0 && step === 0 && (
               <button
-                onClick={() => setStep(1)}
-                className="mt-8 md:mt-10 w-full bg-gradient-to-r from-indigo-600 to-cyan-600 text-white px-6 md:px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-indigo-500/30 hover:scale-105 transition-all duration-200 text-base md:text-xl"
+                onClick={handleProceedToBilling}
+                className="mt-8 md:mt-10 w-full bg-linear-to-r from-indigo-600 to-cyan-600 text-white px-6 md:px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-indigo-500/30 hover:scale-105 transition-all duration-200 text-base md:text-xl"
               >
                 Proceed to Billing
               </button>
             )}
           </div>
-          {/* INVOICE & BILLING */}
-          <div className="flex flex-col gap-6 md:gap-8 w-full">
+
+          {/* FIX #2: This entire div is now hidden on small screens if step is 0
+            This prevents the "Invoice Summary" (the "distorted" cart) from
+            showing below the main cart on mobile.
+          */}
+          <div className={`${step === 0 ? 'hidden lg:flex' : 'flex'} flex-col gap-6 md:gap-8 w-full`}>
+
             {/* Invoice Summary */}
             {step === 0 && (
-              <div className="w-full bg-slate-800 rounded-xl md:rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
-                <div className="bg-gradient-to-r from-indigo-600 to-cyan-600 px-4 md:px-6 py-3 md:py-4 flex items-center gap-2 md:gap-3">
+              <div className="hidden lg:block w-full bg-slate-800 rounded-xl md:rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+                <div className="bg-linear-to-r from-indigo-600 to-cyan-600 px-4 md:px-6 py-3 md:py-4 flex items-center gap-2 md:gap-3">
                   <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 14l2-2 4 4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -217,7 +261,7 @@ const CartPage = () => {
             {/* Billing Details */}
             {step === 1 && (
               <div className="w-full bg-slate-800 rounded-xl md:rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
-                <div className="bg-gradient-to-r from-indigo-600 to-cyan-600 px-4 md:px-6 py-3 md:py-4 flex items-center gap-2 md:gap-3">
+                <div className="bg-linear-to-r from-indigo-600 to-cyan-600 px-4 md:px-6 py-3 md:py-4 flex items-center gap-2 md:gap-3">
                   <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 01-8 0" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 14v7m-4-4h8" />
@@ -310,7 +354,7 @@ const CartPage = () => {
                     </button>
                     <button
                       type="submit"
-                      className="w-full sm:w-auto px-6 md:px-8 py-2 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded font-bold hover:shadow-indigo-500/30 hover:scale-105 transition-all shadow text-base md:text-lg"
+                      className="w-full sm:w-auto px-6 md:px-8 py-2 bg-linear-to-r from-indigo-600 to-cyan-600 text-white rounded font-bold hover:shadow-indigo-500/30 hover:scale-105 transition-all shadow text-base md:text-lg"
                     >
                       Download Invoice
                     </button>
@@ -320,6 +364,37 @@ const CartPage = () => {
             )}
           </div>
         </div>
+
+        {/* Login Prompt Modal */}
+        {showLoginPrompt && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 max-w-md w-full">
+              <div className="flex items-center justify-center mb-6">
+                <svg className="w-16 h-16 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-4 text-center">Login Required</h2>
+              <p className="text-slate-400 mb-6 text-center">
+                Please sign in to proceed with billing. Your profile information will be automatically filled for a faster checkout experience.
+              </p>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setShowLoginPrompt(false)}
+                  className="flex-1 px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLoginRedirect}
+                  className="flex-1 px-6 py-3 bg-linear-to-r from-indigo-600 to-cyan-600 text-white rounded-lg hover:from-indigo-700 hover:to-cyan-700 transition-all font-medium"
+                >
+                  Sign In
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

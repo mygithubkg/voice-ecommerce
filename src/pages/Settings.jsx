@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
-  const { user, signOut } = useAuth();
+  const { user, userProfile, signOut, updateSettings } = useAuth();
   const navigate = useNavigate();
+  const [isSaving, setIsSaving] = useState(false);
 
   // Settings state
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -16,18 +17,38 @@ const Settings = () => {
   const [language, setLanguage] = useState("en");
   const [currency, setCurrency] = useState("USD");
 
-  const handleSaveSettings = () => {
-    // In a real app, you would save these settings to Firebase or backend
-    console.log("Saving settings:", {
-      emailNotifications,
-      orderUpdates,
-      promotionalEmails,
-      voiceCommands,
-      autoSave,
-      language,
-      currency,
-    });
-    alert("Settings saved successfully!");
+  // Load settings from userProfile when it changes
+  useEffect(() => {
+    if (userProfile?.settings) {
+      setEmailNotifications(userProfile.settings.emailNotifications ?? true);
+      setOrderUpdates(userProfile.settings.orderUpdates ?? true);
+      setPromotionalEmails(userProfile.settings.promotionalEmails ?? false);
+      setVoiceCommands(userProfile.settings.voiceCommands ?? true);
+      setAutoSave(userProfile.settings.autoSave ?? true);
+      setLanguage(userProfile.settings.language ?? "en");
+      setCurrency(userProfile.settings.currency ?? "USD");
+    }
+  }, [userProfile]);
+
+  const handleSaveSettings = async () => {
+    try {
+      setIsSaving(true);
+      await updateSettings({
+        emailNotifications,
+        orderUpdates,
+        promotionalEmails,
+        voiceCommands,
+        autoSave,
+        language,
+        currency,
+      });
+      alert("Settings saved successfully!");
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      alert("Failed to save settings. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -47,7 +68,7 @@ const Settings = () => {
           <p className="text-slate-400 mb-6">You need to be signed in to access settings</p>
           <button
             onClick={() => navigate("/")}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-lg hover:from-indigo-700 hover:to-cyan-700 transition-all"
+            className="px-6 py-3 bg-linear-to-r from-indigo-600 to-cyan-600 text-white rounded-lg hover:from-indigo-700 hover:to-cyan-700 transition-all"
           >
             Go to Home
           </button>
@@ -66,7 +87,7 @@ const Settings = () => {
         >
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+            <h1 className="text-4xl font-bold bg-linear-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent mb-2">
               Settings
             </h1>
             <p className="text-slate-400">Manage your account preferences and settings</p>
@@ -208,9 +229,10 @@ const Settings = () => {
           <div className="flex gap-4">
             <button
               onClick={handleSaveSettings}
-              className="flex-1 px-6 py-4 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-lg hover:from-indigo-700 hover:to-cyan-700 transition-all font-medium text-lg"
+              disabled={isSaving}
+              className="flex-1 px-6 py-4 bg-linear-to-r from-indigo-600 to-cyan-600 text-white rounded-lg hover:from-indigo-700 hover:to-cyan-700 transition-all font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save All Settings
+              {isSaving ? "Saving..." : "Save All Settings"}
             </button>
           </div>
 
@@ -249,7 +271,7 @@ const ToggleSetting = ({ label, description, checked, onChange }) => {
       <button
         onClick={() => onChange(!checked)}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-          checked ? "bg-gradient-to-r from-indigo-600 to-cyan-600" : "bg-slate-600"
+          checked ? "bg-linear-to-r from-indigo-600 to-cyan-600" : "bg-slate-600"
         }`}
       >
         <span

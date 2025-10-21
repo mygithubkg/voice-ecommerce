@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useMemo, useContext } from "react";
+import React, { createContext, useReducer, useMemo, useContext, useEffect } from "react";
 
 // Initial cart state
 const initialState = {
@@ -56,11 +56,20 @@ const cartReducer = (state, action) => {
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  const addToCart = (product, quantity = 1) =>
+  const addToCart = (product, quantity = 1) => {
     dispatch({ type: "ADD", product, quantity });
+    return true;
+  };
 
-  const removeFromCart = (product, quantity = 1) =>
+  const removeFromCart = (product, quantity = 1) => {
+    // Check if product exists in cart before removing
+    const existingItem = state.items.find(item => item.id === product.id);
+    if (!existingItem) {
+      return false; // Product not in cart
+    }
     dispatch({ type: "REMOVE", product, quantity });
+    return true; // Successfully removed
+  };
 
   const setQuantity = (product, quantity) =>
     dispatch({ type: "SET_QUANTITY", product, quantity });
@@ -69,6 +78,23 @@ export const CartProvider = ({ children }) => {
 
   const getItemQuantity = (productId) =>
     state.items.find(item => item.id === productId)?.quantity || 0;
+
+
+  // Live monitoring: send cart state to backend on every change
+  useEffect(() => {
+    const sendCartToBackend = async () => {
+      try {
+        await fetch((import.meta?.env?.VITE_BACKEND_URL || "http://localhost:5000") + "/cart-monitor", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cart: state.items }),
+        });
+      } catch (e) {
+        // Optionally log or ignore
+      }
+    };
+    sendCartToBackend();
+  }, [state.items]);
 
   const contextValue = useMemo(
     () => ({

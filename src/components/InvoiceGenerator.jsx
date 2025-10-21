@@ -1,107 +1,155 @@
 import jsPDF from "jspdf";
 
+/**
+ * Generates a modern, themed PDF invoice.
+ * @param {Array} items - The list of items in the cart.
+ * @param {number} total - The grand total.
+ * @param {object} buyer - The buyer's information.
+ * @returns {Promise<void>} A promise that resolves when the PDF is saved.
+ */
 const generateInvoice = (items, total, buyer) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
-  let y = 20;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  let y = 0;
 
-  // Branding Header
-  doc.setFontSize(24);
+  // Define Theme Colors
+  const primaryColor = "#4F46E5"; // Indigo
+  const secondaryColor = "#10B981"; // A splash of cyan/green for accents
+  const textColor = "#1F2937"; // Dark Gray
+  const lightTextColor = "#6B7280"; // Medium Gray
+  const backgroundColor = "#F9FAFB"; // Very Light Gray
+
+  // --- Header Section ---
+  doc.setFillColor(primaryColor);
+  doc.rect(0, 0, pageWidth, 30, 'F');
+
+  doc.setFontSize(26);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(40, 40, 90);
-  doc.text("VoiceCart Pvt. Ltd.", pageWidth / 2, y, { align: "center" });
+  doc.setTextColor("#FFFFFF");
+  doc.text("INVOICE", 20, 20);
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("VoiceCart Pvt. Ltd.", pageWidth - 20, 15, { align: "right" });
+  doc.text("Ghaziabad, Uttar Pradesh, India", pageWidth - 20, 20, { align: "right" });
+  y = 45;
+
+  // --- Invoice Details ---
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(textColor);
+  doc.text("Bill To:", 20, y);
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(lightTextColor);
+  doc.text(buyer.name || "N/A", 20, y + 6);
+  const addressLines = doc.splitTextToSize(buyer.address || "No address provided", 80);
+  doc.text(addressLines, 20, y + 12);
+  const addressHeight = addressLines.length * 5;
+  doc.text(buyer.email || "N/A", 20, y + 12 + addressHeight);
+  doc.text(buyer.phone || "N/A", 20, y + 18 + addressHeight);
+
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(textColor);
+  const invoiceId = `VC-${Math.floor(100000 + Math.random() * 900000)}`;
+  doc.text("Invoice #:", pageWidth - 60, y);
+  doc.text("Date:", pageWidth - 60, y + 6);
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(lightTextColor);
+  doc.text(invoiceId, pageWidth - 20, y, { align: "right" });
+  doc.text(new Date().toLocaleDateString(), pageWidth - 20, y + 6, { align: "right" });
+
+  y += 30 + addressHeight;
+
+  // --- Items Table ---
+  const tableHeaders = ["Item Description", "Qty", "Price", "Total"];
+  const colWidths = [100, 25, 30, 30];
+  let x = 15;
+
+  // Table Header
+  doc.setFillColor(primaryColor);
+  doc.rect(x, y, pageWidth - 30, 10, 'F');
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor("#FFFFFF");
+  doc.setFontSize(11);
+  doc.text(tableHeaders[0], x + 5, y + 7); // Item
+  doc.text(tableHeaders[1], x + colWidths[0] + 12, y + 7, { align: "center" }); // Qty
+  doc.text(tableHeaders[2], x + colWidths[0] + colWidths[1] + 20, y + 7, { align: "right" }); // Price
+  doc.text(tableHeaders[3], x + colWidths[0] + colWidths[1] + colWidths[2] + 28, y + 7, { align: "right" }); // Total
 
   y += 10;
-  doc.setFontSize(12);
+
+  // Table Body
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(100);
-  doc.text("Official Invoice", pageWidth / 2, y, { align: "center" });
+  doc.setTextColor(textColor);
+  doc.setFontSize(10);
 
-  // Date and Invoice Number
-  y += 10;
-  doc.setTextColor(0);
-  doc.setFontSize(11);
-  doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, y);
-  doc.text(`Invoice #: VC-${Math.floor(100000 + Math.random() * 900000)}`, pageWidth - 14, y, { align: "right" });
+  items.forEach((item, index) => {
+    // Zebra stripes
+    if (index % 2 === 0) {
+      doc.setFillColor(backgroundColor);
+      doc.rect(x, y, pageWidth - 30, 10, 'F');
+    }
+    const itemNameLines = doc.splitTextToSize(item.name, 90);
+    const itemY = y + 7;
 
-  // Buyer Info Box
-y += 10;
-doc.setFont("helvetica", "bold");
-doc.setTextColor(0);
-doc.text("Bill To:", 18, y + 8);
-
-// Prepare wrapped address
-doc.setFont("helvetica", "normal");
-doc.setTextColor(60);
-const addressLines = doc.splitTextToSize(buyer.address || "", 80);
-const addressHeight = addressLines.length * 6; // Approx. 6 units per line
-
-// Calculate total height of the info box
-const boxHeight = 30 + addressHeight; // Name (1 line) + Email + Phone + Address block
-
-// Draw background box
-doc.setFillColor(240, 248, 255);
-doc.roundedRect(14, y, pageWidth - 28, boxHeight, 3, 3, 'F');
-
-// Re-draw all text after box
-doc.setFont("helvetica", "bold");
-doc.setTextColor(0);
-doc.text("Bill To:", 18, y + 8);
-
-doc.setFont("helvetica", "normal");
-doc.setTextColor(60);
-doc.text(buyer.name || "", 18, y + 16);
-doc.text(buyer.email || "", 18, y + 22);
-doc.text(buyer.phone || "", 18, y + 28);
-doc.text(addressLines, 18, y + 34);
-
-y += boxHeight + 5; // Move Y below the box for next section
-
-
-  // Table Headers
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.setTextColor(0);
-  doc.setFillColor(220, 230, 255);
-  doc.roundedRect(14, y, pageWidth - 28, 10, 2, 2, 'F');
-  doc.text("Item", 16, y + 7);
-  doc.text("Qty", 96, y + 7);
-  doc.text("Price", 126, y + 7);
-  doc.text("Total", 166, y + 7);
-
-  // Items
-  y += 15;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.setTextColor(50);
-  items.forEach((item) => {
-    doc.text(item.name, 16, y);
-    doc.text(String(item.quantity), 96, y);
-    doc.text(`$${item.price.toFixed(2)}`, 126, y);
-    doc.text(`$${(item.price * item.quantity).toFixed(2)}`, 166, y);
-    y += 8;
+    doc.text(itemNameLines, x + 5, itemY);
+    doc.text(String(item.quantity), x + colWidths[0] + 12, itemY, { align: "center" });
+    doc.text(`$${item.price.toFixed(2)}`, x + colWidths[0] + colWidths[1] + 20, itemY, { align: "right" });
+    doc.text(`$${(item.price * item.quantity).toFixed(2)}`, x + colWidths[0] + colWidths[1] + colWidths[2] + 28, itemY, { align: "right" });
+    
+    // Adjust y for next item, considering wrapped item names
+    const lineHeight = itemNameLines.length > 1 ? (itemNameLines.length * 5) + 5 : 10;
+    y += lineHeight;
+    
+    // Add page break if content overflows
+    if (y > pageHeight - 40) {
+        doc.addPage();
+        y = 20;
+    }
   });
 
-  // Grand Total
-  y += 8;
-  doc.setDrawColor(160);
-  doc.line(14, y, pageWidth - 14, y);
+  // --- Totals Section ---
   y += 10;
+  const totalX = pageWidth - 80;
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.setTextColor(textColor);
+  doc.text("Subtotal:", totalX, y);
+  doc.text(`$${total.toFixed(2)}`, pageWidth - 20, y, { align: "right" });
+  
+  y += 7;
+  doc.text("Tax (0%):", totalX, y);
+  doc.text("$0.00", pageWidth - 20, y, { align: "right" });
+  
+  y += 5;
+  doc.setDrawColor(primaryColor);
+  doc.setLineWidth(0.5);
+  doc.line(totalX - 5, y, pageWidth - 15, y);
+  
+  y += 7;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.setTextColor(20, 20, 60);
-  doc.text("Grand Total:", 126, y);
-  doc.text(`$${total.toFixed(2)}`, 166, y);
+  doc.setFontSize(14);
+  doc.setTextColor(primaryColor);
+  doc.text("Total:", totalX, y);
+  doc.text(`$${total.toFixed(2)}`, pageWidth - 20, y, { align: "right" });
 
-  // Footer
-  y += 25;
+  // --- Footer Section ---
+  const footerY = pageHeight - 20;
+  doc.setFillColor(primaryColor);
+  doc.rect(0, footerY - 5, pageWidth, 25, 'F');
+  
   doc.setFontSize(10);
-  doc.setFont("helvetica", "italic");
-  doc.setTextColor(120);
-  doc.text("Thank you for shopping with VoiceCart! Visit us again.", pageWidth / 2, y, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor("#FFFFFF");
+  doc.text("Thank you for your business!", pageWidth / 2, footerY + 5, { align: "center" });
+  doc.text("www.voicecart.dev", pageWidth / 2, footerY + 11, { align: "center" });
 
-  // Save
-  doc.save("VoiceCart_Invoice.pdf");
+  // --- Save ---
+  doc.save(`VoiceCart_Invoice_${invoiceId}.pdf`);
   return Promise.resolve();
 };
 
