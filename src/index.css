@@ -1,6 +1,15 @@
-@import "tailwindcss";
+/* STEP 1: Import Tailwind's base, components, and utilities.
+  This MUST come first. It includes the "preflight" CSS reset that
+  removes default margins and paddings, which is the correct approach.
+*/
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
-/* Modern Dark Theme Voice Commerce Palette */
+/* STEP 2: Define your global theme variables and base styles.
+  It's better to apply these to the `body` or `:root` instead of using
+  the universal selector (*).
+*/
 :root {
   --primary-indigo: #6366f1;
   --primary-cyan: #06b6d4;
@@ -9,34 +18,36 @@
   --dark-bg: #0f172a;
   --dark-surface: #1e293b;
   --light-text: #f1f5f9;
-
-  font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  color-scheme: dark;
-  background-color: #0f172a;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 5;
-  padding: 5;
 }
 
 body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background: #0f172a;
-  color: #cbd5e1;
   font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  color-scheme: dark;
+  background-color: var(--dark-bg);
+  color: #cbd5e1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
+/* STEP 3: Apply styles to specific elements.
+  Let Tailwind handle the margins and padding via utility classes (e.g., <p class="mb-4">).
+  Only define base styles here.
+*/
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Montserrat', 'Source Sans 3', 'Segoe UI', sans-serif;
   font-weight: 700;
   color: #f8fafc;
+}
+
+p {
+  /* Instead of `margin-bottom: 1rem;`, you should apply a utility class like `mb-4` 
+    to your <p> tags in your JSX for more control. 
+    However, if you want ALL paragraphs to have this, you can use CSS properties here.
+  */
+  margin-bottom: 1rem;
+  line-height: 1.625; /* matches Tailwind's leading-relaxed */
 }
 
 /* Smooth scrolling */
@@ -44,78 +55,56 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar for dark theme */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #1e293b;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #0891b2 100%);
-}
-
-/* Animations */
-@keyframes blob {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  25% {
-    transform: translate(20px, -50px) scale(1.1);
-  }
-  50% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  75% {
-    transform: translate(20px, 30px) scale(1.05);
-  }
-}
-
-.animate-blob {
-  animation: blob 7s infinite;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-/* Ensure icons and SVGs render properly */
-svg {
-  display: inline-block;
-  vertical-align: middle;
-}
-
-/* Fix for button and input elements */
-button, input, textarea, select {
-  font-family: inherit;
-}
-
-/* Prevent layout shifts */
 img {
   max-width: 100%;
   height: auto;
   display: block;
 }
 
-/* Add smooth transitions globally */
-* {
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+/* STEP 4: Define custom utilities or components using @layer.
+  This is the correct way to add new styles that can be overridden by Tailwind utilities.
+*/
+@layer components {
+  /* Custom scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #1e293b;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+    border-radius: 5px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #0891b2 100%);
+  }
 }
 
-p {
-  margin-bottom: 1rem;
-  line-height: 1.7;
+@layer utilities {
+  /* Custom animations */
+  @keyframes blob {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(20px, -50px) scale(1.1);
+    }
+    50% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    75% {
+      transform: translate(20px, 30px) scale(1.05);
+    }
+  }
+
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
 }
