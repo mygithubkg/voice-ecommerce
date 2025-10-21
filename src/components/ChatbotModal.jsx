@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useCart } from "../context/CartContext";
 
 const initialMessages = [
   { 
@@ -14,6 +15,7 @@ const ChatbotModal = ({ open = true, onClose = () => {} }) => {
   const [listening, setListening] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const chatEndRef = useRef(null);
+  const { addToCart, removeFromCart } = useCart();
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -29,21 +31,87 @@ const ChatbotModal = ({ open = true, onClose = () => {} }) => {
     setIsLoading(true);
     
     try {
-      // Send message to backend chatbot endpoint
-      const response = await fetch("http://localhost:5000/chatbot", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: userMessage }),
-      });
-
-      const data = await response.json();
+      // Check if message contains cart-related keywords
+      const cartKeywords = /\b(add|remove|delete|put|take|cart|buy|purchase|get)\b/i;
+      const hasCartAction = cartKeywords.test(userMessage);
       
-      if (data.reply) {
-        setMessages((msgs) => [...msgs, { from: "bot", text: data.reply }]);
+      if (hasCartAction) {
+        // Use voice-command endpoint for cart actions
+        const response = await fetch("http://localhost:5000/voice-command", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ command: userMessage }),
+        });
+
+        const data = await response.json();
+        
+        if (data.actions && data.actions.length > 0) {
+          let botResponse = "";
+          let successCount = 0;
+          let unavailableCount = 0;
+          
+          // Process each action
+          data.actions.forEach(action => {
+            if (action.action === "unavailable") {
+              unavailableCount++;
+              botResponse += `❌ Sorry, "${action.product}" is not available in our catalog.\n`;
+            } else if (action.action === "add") {
+              const product = {
+                id: action.productId,
+                name: action.productName,
+                price: action.price,
+              };
+              addToCart(product, action.quantity);
+              successCount++;
+              botResponse += `✅ Added ${action.quantity} ${action.productName}(s) to your cart ($${action.price} each)\n`;
+            } else if (action.action === "remove") {
+              const product = {
+                id: action.productId,
+                name: action.productName,
+                price: action.price,
+              };
+              const removed = removeFromCart(product, action.quantity);
+              if (removed) {
+                successCount++;
+                botResponse += `✅ Removed ${action.quantity} ${action.productName}(s) from your cart\n`;
+              } else {
+                botResponse += `⚠️ ${action.productName} is not in your cart\n`;
+              }
+            }
+          });
+          
+          // Add summary
+          if (successCount > 0 || unavailableCount > 0) {
+            botResponse += `\n📊 Summary: ${successCount} action(s) completed`;
+            if (unavailableCount > 0) {
+              botResponse += `, ${unavailableCount} item(s) unavailable`;
+            }
+          }
+          
+          setMessages((msgs) => [...msgs, { from: "bot", text: botResponse || "I processed your request!" }]);
+        } else {
+          // No actions detected, fall back to chatbot
+          throw new Error("No actions detected");
+        }
       } else {
-        throw new Error("No reply from chatbot");
+        // Use regular chatbot endpoint for general questions
+        const response = await fetch("http://localhost:5000/chatbot", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ message: userMessage }),
+        });
+
+        const data = await response.json();
+        
+        if (data.reply) {
+          setMessages((msgs) => [...msgs, { from: "bot", text: data.reply }]);
+        } else {
+          throw new Error("No reply from chatbot");
+        }
       }
     } catch (error) {
       console.error("Chatbot error:", error);
