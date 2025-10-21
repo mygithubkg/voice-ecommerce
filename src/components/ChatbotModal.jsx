@@ -15,11 +15,83 @@ const ChatbotModal = ({ open = true, onClose = () => {} }) => {
   const [listening, setListening] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const chatEndRef = useRef(null);
+  const recognitionRef = useRef(null);
   const { addToCart, removeFromCart } = useCart();
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      console.warn("⚠️ Web Speech API not supported in this browser");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      console.log("🎤 Voice captured:", transcript);
+      setInput(transcript);
+      setListening(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("❌ Speech recognition error:", event.error);
+      setMessages((msgs) => [...msgs, { 
+        from: "bot", 
+        text: `⚠️ Voice error: ${event.error}. Please try again or type your message.` 
+      }]);
+      setListening(false);
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
+  // Toggle voice listening
+  const toggleVoiceListening = () => {
+    if (!recognitionRef.current) {
+      setMessages((msgs) => [...msgs, { 
+        from: "bot", 
+        text: "⚠️ Voice recognition not supported in your browser. Please use Chrome, Edge, or Safari." 
+      }]);
+      return;
+    }
+
+    if (listening) {
+      recognitionRef.current.stop();
+      setListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+        setListening(true);
+        setMessages((msgs) => [...msgs, { 
+          from: "bot", 
+          text: "🎤 Listening... Speak now!" 
+        }]);
+      } catch (error) {
+        console.error("Error starting recognition:", error);
+        setListening(false);
+      }
+    }
+  };
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -208,7 +280,7 @@ const ChatbotModal = ({ open = true, onClose = () => {} }) => {
         <form onSubmit={handleSend} className="flex items-center gap-2 px-3 md:px-6 py-2 md:py-4 bg-slate-800 border-t border-slate-700 flex-shrink-0">
           <button
             type="button"
-            onClick={() => setListening(!listening)}
+            onClick={toggleVoiceListening}
             className={`rounded-full p-2 md:p-3 shadow-lg transition-all flex-shrink-0 ${listening ? "bg-red-500 text-white animate-pulse scale-105" : "bg-gradient-to-r from-indigo-600 to-cyan-600 text-white hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-105"}`}
             title={listening ? "Stop Listening" : "Start Voice Command"}
           >
