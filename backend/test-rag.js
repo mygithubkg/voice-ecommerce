@@ -1,10 +1,3 @@
-#!/usr/bin/env node
-
-/**
- * RAG Pipeline Test Script
- * Tests all RAG endpoints to verify implementation
- */
-
 const API_URL = "http://localhost:5000";
 
 // Color codes for terminal output

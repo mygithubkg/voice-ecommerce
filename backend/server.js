@@ -1,6 +1,3 @@
-// ====== LIVE CART MONITORING ENDPOINT ======
-
-// server.js
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -21,8 +18,8 @@ function buildProductContext() {
   return allProducts.map(p => `- ${p.name} ($${p.price}) [aliases: ${p.aliases.join(", ")}]`).join("\n");
 }
 
-const API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const API_KEY = process.env.GROQ_API_KEY;
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 // ====== RAG ENDPOINT: Get Product Catalog ======
 app.get("/products", (req, res) => {
@@ -80,53 +77,48 @@ Output:
 
   try {
     const response = await axios.post(
-      GEMINI_URL,
+      GROQ_URL,
       {
-        contents: [
-          {
-            parts: [{ text: prompt }],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.7,
-        },
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
       },
       {
         headers: {
           "Content-Type": "application/json",
-          "x-goog-api-key": API_KEY, // ✅ API Key sent in headers
+          "Authorization": `Bearer ${API_KEY}`,
         },
       }
     );
 
-    const geminiText = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
-    console.log("🧠 Gemini raw output:", geminiText);
+    const groqText = response.data.choices?.[0]?.message?.content;
+    console.log("🧠 Groq raw output:", groqText);
 
-    if (!geminiText) {
-      return res.status(500).json({ error: "No response from Gemini model" });
+    if (!groqText) {
+      return res.status(500).json({ error: "No response from Groq model" });
     }
 
     // ✅ Clean output from markdown if present
-    const cleaned = geminiText.replace(/```json|```/g, "").trim();
+    const cleaned = groqText.replace(/```json|```/g, "").trim();
 
     let parsed;
     try {
       parsed = JSON.parse(cleaned);
     } catch (e) {
       return res.status(400).json({
-        error: "❌ Could not parse Gemini output to JSON.",
-        raw: geminiText,
+        error: "❌ Could not parse Groq output to JSON.",
+        raw: groqText,
       });
     }
 
     // ====== RAG POST-PROCESSING: Validate products against catalog ======
     const validatedActions = parsed.map(action => {
       if (action.action === "unavailable") {
-        return action; // Already marked as unavailable by Gemini
+        return action; // Already marked as unavailable by Groq
       }
 
       const product = findProductByName(action.product);
-      
+
       if (!product) {
         console.log(`⚠️ Product not found: ${action.product}`);
         return {
@@ -149,14 +141,14 @@ Output:
 
     console.log("✅ Validated actions:", JSON.stringify(validatedActions, null, 2));
 
-    res.json({ 
+    res.json({
       actions: validatedActions,
       totalActions: validatedActions.length,
       availableActions: validatedActions.filter(a => a.action !== "unavailable").length,
       unavailableActions: validatedActions.filter(a => a.action === "unavailable").length,
     });
   } catch (err) {
-    console.error("❌ Gemini API error:", err.message);
+    console.error("❌ Groq API error:", err.message);
     res.status(500).json({ error: "Failed to process command" });
   }
 });
@@ -188,7 +180,7 @@ PRODUCT CATEGORIES: ${categories}
 
 Website features you should know:
 - Voice-powered shopping using speech recognition
-- AI-powered cart management with natural language (powered by RAG and Gemini)
+- AI-powered cart management with natural language (powered by RAG and Groq)
 - Instant invoice generation
 - Multiple product categories: ${categories}
 - Google authentication for user accounts
@@ -207,33 +199,28 @@ AI Assistant:`;
 
   try {
     const response = await axios.post(
-      GEMINI_URL,
+      GROQ_URL,
       {
-        contents: [
-          {
-            parts: [{ text: prompt }],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 200,
-        },
+        model: "llama3-8b-8192",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+        max_tokens: 200,
       },
       {
         headers: {
           "Content-Type": "application/json",
-          "x-goog-api-key": API_KEY,
+          "Authorization": `Bearer ${API_KEY}`,
         },
       }
     );
 
-    const geminiText = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!geminiText) {
-      return res.status(500).json({ error: "No response from Gemini model" });
+    const groqText = response.data.choices?.[0]?.message?.content;
+    if (!groqText) {
+      return res.status(500).json({ error: "No response from Groq model" });
     }
-    res.json({ reply: geminiText.trim() });
+    res.json({ reply: groqText.trim() });
   } catch (err) {
-    console.error("❌ Gemini API error (chatbot):", err.message);
+    console.error("❌ Groq API error (chatbot):", err.message);
     res.status(500).json({ error: "Failed to process chat message" });
   }
 });
@@ -241,7 +228,7 @@ AI Assistant:`;
 // ====== RAG ENDPOINT: Intelligent Product Search ======
 app.post("/search-products", async (req, res) => {
   const { query } = req.body;
-  
+
   if (!query) {
     return res.status(400).json({ error: "Search query is required" });
   }
@@ -277,28 +264,30 @@ Output:`;
 
   try {
     const response = await axios.post(
-      GEMINI_URL,
+      GROQ_URL,
       {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.5, maxOutputTokens: 500 },
+        model: "llama3-8b-8192",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.5,
+        max_tokens: 500,
       },
       {
         headers: {
           "Content-Type": "application/json",
-          "x-goog-api-key": API_KEY,
+          "Authorization": `Bearer ${API_KEY}`,
         },
       }
     );
 
-    const geminiText = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
-    const cleaned = geminiText.replace(/```json|```/g, "").trim();
+    const groqText = response.data.choices?.[0]?.message?.content;
+    const cleaned = groqText.replace(/```json|```/g, "").trim();
     const results = JSON.parse(cleaned);
 
-    res.json({ 
+    res.json({
       success: true,
       query,
       results,
-      totalResults: results.length 
+      totalResults: results.length
     });
   } catch (err) {
     console.error("❌ Search error:", err.message);
@@ -324,7 +313,7 @@ app.get("/rag-analytics", (req, res) => {
     },
     ragStatus: {
       catalogLoaded: true,
-      geminiIntegration: !!API_KEY,
+      groqIntegration: !!API_KEY,
       endpoints: [
         "/products - Get full product catalog",
         "/voice-command - RAG-enhanced voice commands",
@@ -341,7 +330,7 @@ app.get("/rag-analytics", (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
   console.log(`📦 Product catalog loaded: ${getAllProducts().length} products`);
-  console.log(`🧠 RAG Pipeline active with Gemini AI`);
+  console.log(`🧠 RAG Pipeline active with Groq AI`);
   console.log(`\n📋 Available endpoints:`);
   console.log(`   GET  /products - Get product catalog`);
   console.log(`   POST /voice-command - Process voice commands with RAG`);
@@ -350,4 +339,3 @@ app.listen(PORT, () => {
   console.log(`   GET  /rag-analytics - View RAG system analytics\n`);
 });
 
-  
