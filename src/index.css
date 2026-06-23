@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "./design-system/tokens.css";
+@import "./design-system/token.css";
 
 /* Base reset and global styles for light editorial theme */
 :root {
