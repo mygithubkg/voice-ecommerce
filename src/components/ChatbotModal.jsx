@@ -1,35 +1,34 @@
 import React, { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
+import { X, Send, Mic, Sparkles } from "lucide-react";
 
 const initialMessages = [
-  { 
-    from: "bot", 
-    text: "👋 Hi!\n I'm your VoiceCart AI Assistant,🎙️\n\n✨ I can help you:\n• Shop using voice commands\n• Add/remove items from cart\n• Answer questions about products\n• Guide you through the website\n\nTry saying: 'Add 2 apples to cart' or ask me anything! "
+  {
+    from: "bot",
+    text: "Welcome to aura. I can curate your cart, manage your items, or answer questions. Try saying: 'Add 2 organic apples'."
   },
 ];
 
-const ChatbotModal = ({ open = true, onClose = () => {} }) => {
+const ChatbotModal = () => {
+  const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
   const [listening, setListening] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const chatEndRef = useRef(null);
   const recognitionRef = useRef(null);
   const { addToCart, removeFromCart } = useCart();
+  const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isLoading]);
 
-  // Initialize Speech Recognition
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
-    if (!SpeechRecognition) {
-      console.warn("⚠️ Web Speech API not supported in this browser");
-      return;
-    }
+    if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
@@ -38,43 +37,19 @@ const ChatbotModal = ({ open = true, onClose = () => {} }) => {
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      console.log("🎤 Voice captured:", transcript);
       setInput(transcript);
       setListening(false);
     };
 
-    recognition.onerror = (event) => {
-      console.error("❌ Speech recognition error:", event.error);
-      setMessages((msgs) => [...msgs, { 
-        from: "bot", 
-        text: `⚠️ Voice error: ${event.error}. Please try again or type your message.` 
-      }]);
-      setListening(false);
-    };
-
-    recognition.onend = () => {
-      setListening(false);
-    };
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
 
     recognitionRef.current = recognition;
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
+    return () => recognitionRef.current?.stop();
   }, []);
 
-  // Toggle voice listening
   const toggleVoiceListening = () => {
-    if (!recognitionRef.current) {
-      setMessages((msgs) => [...msgs, { 
-        from: "bot", 
-        text: "⚠️ Voice recognition not supported in your browser. Please use Chrome, Edge, or Safari." 
-      }]);
-      return;
-    }
-
+    if (!recognitionRef.current) return;
     if (listening) {
       recognitionRef.current.stop();
       setListening(false);
@@ -82,12 +57,7 @@ const ChatbotModal = ({ open = true, onClose = () => {} }) => {
       try {
         recognitionRef.current.start();
         setListening(true);
-        setMessages((msgs) => [...msgs, { 
-          from: "bot", 
-          text: "🎤 Listening... Speak now!" 
-        }]);
       } catch (error) {
-        console.error("Error starting recognition:", error);
         setListening(false);
       }
     }
@@ -96,89 +66,65 @@ const ChatbotModal = ({ open = true, onClose = () => {} }) => {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    
+
     const userMessage = input.trim();
     setMessages((msgs) => [...msgs, { from: "user", text: userMessage }]);
     setInput("");
     setIsLoading(true);
-    
+
     try {
-      // Check if message contains cart-related keywords
       const cartKeywords = /\b(add|remove|delete|put|take|cart|buy|purchase|get)\b/i;
       const hasCartAction = cartKeywords.test(userMessage);
-      
+
       if (hasCartAction) {
-        // Use voice-command endpoint for cart actions
-        const response = await fetch("http://localhost:5000/voice-command", {
+        const response = await fetch(`${backendURL}/voice-command`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ command: userMessage }),
         });
-
         const data = await response.json();
-        
+
         if (data.actions && data.actions.length > 0) {
           let botResponse = "";
           let successCount = 0;
           let unavailableCount = 0;
-          
-          // Process each action
+
           data.actions.forEach(action => {
             if (action.action === "unavailable") {
               unavailableCount++;
-              botResponse += `❌ Sorry, "${action.product}" is not available in our catalog.\n`;
+              botResponse += `— Currently unavailable: "${action.product}"\n`;
             } else if (action.action === "add") {
-              const product = {
-                id: action.productId,
-                name: action.productName,
-                price: action.price,
-              };
+              const product = { id: action.productId, name: action.productName, price: action.price };
               addToCart(product, action.quantity);
               successCount++;
-              botResponse += `✅ Added ${action.quantity} ${action.productName}(s) to your cart ($${action.price} each)\n`;
+              botResponse += `+ Added ${action.quantity} ${action.productName}(s) to cart.\n`;
             } else if (action.action === "remove") {
-              const product = {
-                id: action.productId,
-                name: action.productName,
-                price: action.price,
-              };
+              const product = { id: action.productId, name: action.productName, price: action.price };
               const removed = removeFromCart(product, action.quantity);
               if (removed) {
                 successCount++;
-                botResponse += `✅ Removed ${action.quantity} ${action.productName}(s) from your cart\n`;
+                botResponse += `- Removed ${action.quantity} ${action.productName}(s).\n`;
               } else {
-                botResponse += `⚠️ ${action.productName} is not in your cart\n`;
+                botResponse += `— ${action.productName} is not in your cart.\n`;
               }
             }
           });
-          
-          // Add summary
+
           if (successCount > 0 || unavailableCount > 0) {
-            botResponse += `\n📊 Summary: ${successCount} action(s) completed`;
-            if (unavailableCount > 0) {
-              botResponse += `, ${unavailableCount} item(s) unavailable`;
-            }
+            botResponse += `\nProcessed ${successCount} action(s).`;
           }
-          
-          setMessages((msgs) => [...msgs, { from: "bot", text: botResponse || "I processed your request!" }]);
+          setMessages((msgs) => [...msgs, { from: "bot", text: botResponse || "Request processed." }]);
         } else {
-          // No actions detected, fall back to chatbot
           throw new Error("No actions detected");
         }
       } else {
-        // Use regular chatbot endpoint for general questions
-        const response = await fetch("http://localhost:5000/chatbot", {
+        const response = await fetch(`${backendURL}/chatbot`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: userMessage }),
         });
-
         const data = await response.json();
-        
+
         if (data.reply) {
           setMessages((msgs) => [...msgs, { from: "bot", text: data.reply }]);
         } else {
@@ -186,134 +132,162 @@ const ChatbotModal = ({ open = true, onClose = () => {} }) => {
         }
       }
     } catch (error) {
-      console.error("Chatbot error:", error);
       setMessages((msgs) => [
-        ...msgs, 
-        { from: "bot", text: "Sorry, I'm having trouble connecting. Please make sure the backend server is running on port 5000." }
+        ...msgs,
+        { from: "bot", text: "Connection anomaly detected. Please try again." }
       ]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 60 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 60 }}
-        className="w-full max-w-md h-[90vh] md:h-[600px] bg-slate-800 rounded-2xl md:rounded-3xl shadow-2xl shadow-indigo-500/20 border border-slate-700 flex flex-col overflow-hidden"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-indigo-600 to-cyan-600 flex-shrink-0">
-          <div className="flex items-center gap-2 md:gap-3 min-w-0">
-            <div className="w-8 md:w-10 h-8 md:h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 md:w-6 h-5 md:h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
-            </div>
-            <div className="min-w-0">
-              <span className="font-bold text-sm md:text-lg text-white block truncate">VoiceCart AI</span>
-              <p className="text-xs text-cyan-200 flex items-center gap-1">
-                <svg className="w-2 md:w-3 h-2 md:h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <circle cx="10" cy="10" r="4"/>
-                </svg>
-                <span className="truncate">Powered by VOICECART</span>
-              </p>
-            </div>
-          </div>
-          <button 
-            onClick={onClose} 
-            className="text-white text-2xl md:text-3xl font-bold hover:text-cyan-300 transition-colors flex-shrink-0 ml-2"
+    <>
+      {/* Floating Action Button - Dark Premium Style */}
+      <AnimatePresence>
+        {!open && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setOpen(true)}
+            className="fixed bottom-8 right-8 z-[100] w-16 h-16 rounded-full bg-[#0A0A0F] border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)] flex items-center justify-center group overflow-hidden"
           >
-            ×
-          </button>
-        </div>
+            {/* Subtle hover glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#00D4AA]/20 to-[#6C63FF]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl rounded-full" />
+            <Sparkles className="w-6 h-6 text-white/80 group-hover:text-white transition-colors relative z-10" />
 
-        {/* Chat Messages Area */}
-        <div className="flex-1 overflow-y-auto px-3 md:px-6 py-3 md:py-4 bg-slate-900 space-y-3 md:space-y-4">
-          {messages.map((msg, idx) => (
-            <div key={idx} className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`rounded-lg md:rounded-2xl px-3 md:px-4 py-2 md:py-3 max-w-xs text-sm md:text-base shadow-lg break-words ${msg.from === "user" ? "bg-gradient-to-r from-indigo-600 to-cyan-600 text-white" : "bg-slate-800 text-slate-200 border border-slate-700"}`}>
-                {msg.text}
-              </div>
-            </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="rounded-lg md:rounded-2xl px-3 md:px-4 py-2 md:py-3 bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-2 text-sm md:text-base">
-                <svg className="w-4 md:w-5 h-4 md:h-5 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span className="truncate">Thinking...</span>
-              </div>
-            </div>
-          )}
-          {listening && (
-            <div className="flex justify-start">
-              <div className="rounded-lg md:rounded-2xl px-3 md:px-4 py-2 md:py-3 bg-indigo-500/20 text-indigo-300 animate-pulse border border-indigo-500/50 flex items-center gap-2 text-sm md:text-base">
-                <svg className="w-4 md:w-5 h-4 md:h-5 animate-pulse flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
-                <span className="truncate">🎤 Listening...</span>
-              </div>
-            </div>
-          )}
-          <div ref={chatEndRef} />
-        </div>
-
-        {/* Voice Status Indicator */}
-        {listening && (
-          <div className="px-3 md:px-6 py-2 bg-indigo-600/20 border-t border-indigo-500/30 flex items-center justify-center gap-2 text-indigo-300 text-xs md:text-sm flex-shrink-0">
-            <div className="flex gap-1">
-              <span className="w-1 h-3 md:h-4 bg-indigo-400 rounded-full animate-pulse" style={{animationDelay: '0ms'}}></span>
-              <span className="w-1 h-3 md:h-4 bg-indigo-400 rounded-full animate-pulse" style={{animationDelay: '150ms'}}></span>
-              <span className="w-1 h-3 md:h-4 bg-indigo-400 rounded-full animate-pulse" style={{animationDelay: '300ms'}}></span>
-            </div>
-            <span className="truncate">Voice input active</span>
-          </div>
+            {/* Tiny breathing notification dot */}
+            <motion.div
+              animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="absolute top-4 right-4 w-1.5 h-1.5 bg-[#00D4AA] rounded-full z-20"
+            />
+          </motion.button>
         )}
+      </AnimatePresence>
 
-        {/* Input Area */}
-        <form onSubmit={handleSend} className="flex items-center gap-2 px-3 md:px-6 py-2 md:py-4 bg-slate-800 border-t border-slate-700 flex-shrink-0">
-          <button
-            type="button"
-            onClick={toggleVoiceListening}
-            className={`rounded-full p-2 md:p-3 shadow-lg transition-all flex-shrink-0 ${listening ? "bg-red-500 text-white animate-pulse scale-105" : "bg-gradient-to-r from-indigo-600 to-cyan-600 text-white hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-105"}`}
-            title={listening ? "Stop Listening" : "Start Voice Command"}
+      {/* Main Chat Interface - Frosted Glass Glassmorphism */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 40, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            className="fixed bottom-6 right-6 z-[120] w-[calc(100vw-32px)] sm:w-[420px] h-[600px] bg-[#0A0A0F]/80 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden"
           >
-            {listening ? (
-              <svg className="w-5 md:w-6 h-5 md:h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z" />
-              </svg>
-            ) : (
-              <svg className="w-5 md:w-6 h-5 md:h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
-            )}
-          </button>
-          <input
-            type="text"
-            className="flex-1 min-w-0 border-2 border-slate-600 bg-slate-700 text-white rounded-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-            placeholder="Type or use voice..."
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            disabled={listening}
-          />
-          <button
-            type="submit"
-            className="bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-full px-3 md:px-6 py-2 md:py-3 font-semibold shadow-lg hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-            disabled={!input.trim() || isLoading}
-          >
-            <svg className="w-4 md:w-5 h-4 md:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-            </svg>
-          </button>
-        </form>
-      </motion.div>
-    </div>
+            {/* Minimalist Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-white/[0.02] shrink-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-serif font-medium text-2xl tracking-tight text-white">
+                  aura
+                </span>
+                <motion.div
+                  animate={{ scale: [1, 1.4, 1], opacity: [0.7, 1, 0.7] }}
+                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                  className="w-1.5 h-1.5 rounded-full bg-[#00D4AA] mb-1"
+                />
+              </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-white/50 hover:bg-white/10 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5 stroke-[1.5]" />
+              </button>
+            </div>
+
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 [&::-webkit-scrollbar]:hidden relative z-10">
+              {messages.map((msg, idx) => (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  key={idx}
+                  className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div className={`
+                    px-5 py-3.5 max-w-[80%] text-[15px] leading-relaxed font-light
+                    ${msg.from === "user"
+                      ? "bg-white text-[#0A0A0F] rounded-2xl rounded-tr-sm font-medium"
+                      : "bg-white/5 border border-white/10 text-white/90 rounded-2xl rounded-tl-sm whitespace-pre-wrap backdrop-blur-md"}
+                  `}>
+                    {msg.text}
+                  </div>
+                </motion.div>
+              ))}
+
+              {/* Minimal Loading Indicator */}
+              {isLoading && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+                  <div className="px-5 py-4 bg-white/5 border border-white/10 rounded-2xl rounded-tl-sm backdrop-blur-md flex items-center gap-2 h-[48px]">
+                    <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0 }} className="w-1.5 h-1.5 bg-white/50 rounded-full" />
+                    <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-white/50 rounded-full" />
+                    <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-white/50 rounded-full" />
+                  </div>
+                </motion.div>
+              )}
+              <div ref={chatEndRef} className="h-2" />
+            </div>
+
+            {/* Input Area */}
+            <div className="p-5 border-t border-white/5 bg-gradient-to-t from-[#0A0A0F] to-transparent shrink-0 relative">
+
+              {/* Elegant Listening Indicator */}
+              <AnimatePresence>
+                {listening && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#00D4AA]/10 border border-[#00D4AA]/30 text-[#00D4AA] backdrop-blur-md px-4 py-1.5 rounded-full text-xs tracking-wide flex items-center gap-2 shadow-[0_0_20px_rgba(0,212,170,0.2)]"
+                  >
+                    <span className="w-1.5 h-1.5 bg-[#00D4AA] rounded-full animate-ping" />
+                    Listening
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <form onSubmit={handleSend} className="relative flex items-center bg-white/[0.03] border border-white/10 rounded-full p-1.5 focus-within:border-white/30 focus-within:bg-white/[0.05] transition-all duration-300">
+
+                {/* Voice Button */}
+                <button
+                  type="button"
+                  onClick={toggleVoiceListening}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shrink-0 ${listening
+                      ? "bg-[#00D4AA] text-[#0A0A0F] shadow-[0_0_15px_rgba(0,212,170,0.5)]"
+                      : "bg-transparent text-white/50 hover:bg-white/10 hover:text-white"
+                    }`}
+                >
+                  <Mic className="w-5 h-5 stroke-[1.5]" />
+                </button>
+
+                {/* Text Input */}
+                <input
+                  type="text"
+                  className="flex-1 bg-transparent text-white px-3 py-2 text-[15px] font-light placeholder:text-white/30 focus:outline-none"
+                  placeholder="Speak or type a command..."
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  disabled={listening || isLoading}
+                />
+
+                {/* Send Button */}
+                <button
+                  type="submit"
+                  disabled={!input.trim() || isLoading}
+                  className="w-10 h-10 rounded-full bg-white text-[#0A0A0F] flex items-center justify-center disabled:opacity-30 disabled:bg-white/20 disabled:text-white transition-all shrink-0 hover:scale-105 active:scale-95"
+                >
+                  <Send className="w-4 h-4 -ml-0.5" />
+                </button>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

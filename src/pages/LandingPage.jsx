@@ -1,241 +1,202 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { MicrophoneIcon, SparklesIcon, BoltIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
-import ChatbotModal from "../components/ChatbotModal";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
+import { Mic, ArrowRight, Sparkles, Fingerprint, Waves } from "lucide-react";
 
-const LandingPage = () => {
-  const [isChatOpen, setIsChatOpen] = useState(false);
+// --- 1. Dark Ambient Mouse-Tracking Background ---
+// Generates a deep, organic glow that subtly tracks the user's cursor
+const AmbientBackground = () => {
+  const cursorX = useMotionValue(-100);
+  const cursorY = useMotionValue(-100);
+  const springConfig = { damping: 30, stiffness: 120 };
+  const cursorXSpring = useSpring(cursorX, springConfig);
+  const cursorYSpring = useSpring(cursorY, springConfig);
 
-  const features = [
-    {
-      icon: <MicrophoneIcon className="w-12 h-12" />,
-      title: "Voice Commands",
-      description: "Shop naturally using your voice. Just say what you need, and we'll handle the rest.",
-      gradient: "from-indigo-500 to-purple-500"
-    },
-    {
-      icon: <SparklesIcon className="w-12 h-12" />,
-      title: "AI-Powered Assistant",
-      description: "Get intelligent recommendations and instant answers from our smart chatbot.",
-      gradient: "from-cyan-500 to-blue-500"
-    },
-    {
-      icon: <BoltIcon className="w-12 h-12" />,
-      title: "Lightning Fast",
-      description: "Experience seamless shopping with real-time cart updates and instant processing.",
-      gradient: "from-amber-500 to-orange-500"
-    },
-    {
-      icon: <ShieldCheckIcon className="w-12 h-12" />,
-      title: "Secure & Private",
-      description: "Your data is protected with enterprise-grade security and encrypted transactions.",
-      gradient: "from-green-500 to-emerald-500"
-    }
-  ];
+  useEffect(() => {
+    const moveCursor = (e) => {
+      cursorX.set(e.clientX - 250);
+      cursorY.set(e.clientY - 250);
+    };
+    window.addEventListener("mousemove", moveCursor);
+    return () => window.removeEventListener("mousemove", moveCursor);
+  }, [cursorX, cursorY]);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-300 antialiased">
-      {/* Hero Section */}
-  <section className="relative pt-12 md:pt-16 pb-20 md:pb-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        {/* Grid Background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px)`,
-              backgroundSize: '50px 50px'
-            }}></div>
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      <motion.div
+        style={{ x: cursorXSpring, y: cursorYSpring }}
+        className="absolute w-[500px] h-[500px] rounded-full mix-blend-screen filter blur-[120px] opacity-20 bg-gradient-to-tr from-[#6C63FF] to-[#00D4AA]"
+      />
+    </div>
+  );
+};
+
+// --- 2. Dark-Mode Voice Visualizer Component ---
+const ActiveListeningWave = () => {
+  return (
+    <div className="flex items-center justify-center gap-1.5 h-16">
+      {[...Array(7)].map((_, i) => (
+        <motion.div
+          key={i}
+          animate={{ height: ["12px", "40px", "12px"] }}
+          transition={{
+            repeat: Infinity,
+            duration: 1,
+            delay: i * 0.1,
+            ease: "easeInOut",
+          }}
+          className="w-1.5 bg-white/40 rounded-full group-hover:bg-[#00D4AA] transition-colors"
+        />
+      ))}
+    </div>
+  );
+};
+
+// --- 3. Main Landing Page ---
+const LandingPage = () => {
+  const { scrollYProgress } = useScroll();
+  const scaleHero = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
+  const opacityHero = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
+
+  return (
+    <div className="w-full relative bg-[#0A0A0F] text-white overflow-hidden font-sans selection:bg-[#6C63FF]/30 selection:text-white">
+      <AmbientBackground />
+
+      {/* --- HERO SECTION --- */}
+      <motion.section
+        style={{ scale: scaleHero, opacity: opacityHero }}
+        className="relative w-full h-screen flex flex-col items-center justify-center pt-20 px-6 z-10"
+      >
+        <motion.div
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center max-w-4xl"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-sm mb-8">
+            <Sparkles className="w-4 h-4 text-[#00D4AA]" />
+            <span className="text-sm font-medium tracking-wide text-white/70">The first intuitive pantry.</span>
           </div>
-          {/* Gradient Orbs */}
-          <div className="absolute top-10 md:top-20 left-5 md:left-10 w-64 h-64 md:w-96 md:h-96 bg-indigo-500/20 rounded-full filter blur-3xl"></div>
-          <div className="absolute bottom-10 md:bottom-20 right-5 md:right-10 w-64 h-64 md:w-96 md:h-96 bg-cyan-500/20 rounded-full filter blur-3xl"></div>
-        </div>
 
-        <div className="max-w-7xl mx-auto relative">
-          <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center min-h-[500px] md:min-h-[600px]">
-            {/* Left Content */}
+          <h1 className="text-6xl md:text-8xl font-serif font-medium leading-[1.1] tracking-tight mb-8">
+            Don't type it.<br />
+            <span className="italic text-white/30">Just tell us.</span>
+          </h1>
+
+          <p className="text-xl text-white/50 max-w-xl mx-auto mb-12 font-light leading-relaxed">
+            A radical new way to stock your home. Speak naturally, and watch your cart assemble itself in real-time.
+          </p>
+
+          <div className="flex flex-col items-center justify-center relative group">
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-24 h-24 bg-white/[0.03] border border-white/10 rounded-full flex items-center justify-center shadow-[0_20px_50px_rgba(0,0,0,0.5)] cursor-pointer z-10 group-hover:border-[#00D4AA]/40 transition-colors duration-500"
             >
-              <div className="inline-block mb-4 md:mb-6">
-                <span className="px-3 md:px-4 py-2 bg-slate-800 border border-slate-700 text-indigo-400 rounded-full text-xs sm:text-sm font-semibold inline-flex items-center gap-2">
-                  <MicrophoneIcon className="w-3 h-3 md:w-4 md:h-4" />
-                  Voice-Powered Shopping
-                </span>
-              </div>
-              
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-4 md:mb-6 leading-tight text-white">
-                Shop with Your
-                <span className="block bg-gradient-to-r from-indigo-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                  Voice
-                </span>
-              </h1>
-              
-              <p className="text-base sm:text-lg md:text-xl text-slate-400 mb-6 md:mb-8 leading-relaxed">
-                Experience the future of e-commerce. Add items to your cart, ask questions, and complete purchases—all hands-free with our AI-powered voice assistant.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
-                <Link
-                  to="/products"
-                  className="px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold rounded-full hover:shadow-2xl hover:shadow-indigo-500/50 hover:scale-105 transition-all duration-200 text-center text-sm md:text-base"
-                >
-                  Start Shopping
-                </Link>
-                <button
-                  onClick={() => setIsChatOpen(true)}
-                  className="px-6 md:px-8 py-3 md:py-4 bg-slate-800 border-2 border-slate-700 text-slate-300 font-semibold rounded-full hover:border-indigo-500 hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 text-sm md:text-base"
-                >
-                  <MicrophoneIcon className="w-4 h-4 md:w-5 md:h-5" />
-                  <span>Try Voice Demo</span>
-                </button>
-              </div>
-
-              {/* Stats */}
-              <div className="mt-8 md:mt-12 grid grid-cols-3 gap-4 md:gap-6">
-                <div>
-                  <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">50+</div>
-                  <div className="text-xs md:text-sm text-slate-500">Products</div>
-                </div>
-                <div>
-                  <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">24/7</div>
-                  <div className="text-xs md:text-sm text-slate-500">AI Support</div>
-                </div>
-                <div>
-                  <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">99%</div>
-                  <div className="text-xs md:text-sm text-slate-500">Accuracy</div>
-                </div>
-              </div>
+              <Mic className="w-8 h-8 text-white/80 group-hover:text-[#00D4AA] transition-colors duration-500" />
             </motion.div>
-
-            {/* Right Content - Voice Interface Animation */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative hidden lg:block"
-            >
-              <div className="relative">
-                {/* Main card */}
-                <div className="relative bg-slate-800 border border-slate-700 rounded-3xl shadow-2xl p-8">
-                  <div className="flex items-center space-x-4 mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-2xl flex items-center justify-center">
-                      <MicrophoneIcon className="w-10 h-10 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-xl text-white">Voice Assistant</h3>
-                      <p className="text-sm text-slate-400">Listening...</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3 mb-6">
-                    <div className="bg-slate-700/50 rounded-xl p-4 border border-slate-600">
-                      <p className="text-sm text-slate-300">"Add 2 apples and 1 milk to cart"</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 rounded-xl p-4 border border-indigo-500/30">
-                      <p className="text-sm text-slate-200">✓ Added 2 apples to your cart</p>
-                      <p className="text-sm text-slate-200">✓ Added 1 milk to your cart</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-center">
-                    <motion.div
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="w-20 h-20 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full flex items-center justify-center"
-                    >
-                      <MicrophoneIcon className="w-12 h-12 text-white" />
-                    </motion.div>
-                  </div>
-                </div>
-
-                {/* Floating elements */}
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  className="absolute -top-8 -right-8 bg-slate-800 border border-slate-700 rounded-2xl shadow-xl p-4"
-                >
-                  <div className="text-2xl">🛒</div>
-                </motion.div>
-
-                <motion.div
-                  animate={{ y: [0, 10, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
-                  className="absolute -bottom-8 -left-8 bg-slate-800 border border-slate-700 rounded-2xl shadow-xl p-4"
-                >
-                  <div className="text-2xl">✨</div>
-                </motion.div>
-              </div>
-            </motion.div>
+            <div className="absolute top-full mt-6">
+              <ActiveListeningWave />
+            </div>
           </div>
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
 
-      {/* Features Section */}
-      <section className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 bg-slate-800/30">
-        <div className="max-w-7xl mx-auto">
+      {/* --- BENTO BOX GRID (Features) --- */}
+      <section className="relative z-10 px-6 py-32 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
+
+          {/* Box 1: Spans 2 columns */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12 md:mb-16"
+            viewport={{ once: true, margin: "-100px" }}
+            className="md:col-span-2 bg-white/[0.01] rounded-[2rem] p-10 border border-white/5 backdrop-blur-3xl shadow-2xl relative overflow-hidden flex flex-col justify-end group"
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-white">
-              Why Choose <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">VoiceCart</span>
-            </h2>
-            <p className="text-base sm:text-lg md:text-xl text-slate-400">Experience shopping like never before with cutting-edge technology</p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="group relative bg-slate-800 p-6 md:p-8 rounded-2xl hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 border border-slate-700 hover:border-indigo-500"
-              >
-                <div className={`inline-block p-3 md:p-4 bg-gradient-to-r ${feature.gradient} rounded-2xl mb-4 text-white group-hover:scale-110 transition-transform duration-300`}>
-                  {feature.icon}
-                </div>
-                <h3 className="text-lg md:text-xl font-bold mb-3 text-white">{feature.title}</h3>
-                <p className="text-sm md:text-base text-slate-400">{feature.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 md:py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-2xl md:rounded-3xl p-8 md:p-12 shadow-2xl"
-          >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 md:mb-6">
-              Ready to Transform Your Shopping Experience?
-            </h2>
-            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 md:mb-8">
-              Join thousands of users who are already shopping smarter with voice commands
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#6C63FF]/10 to-transparent opacity-50 rounded-bl-[100px] transition-transform duration-700 group-hover:scale-110" />
+            <Waves className="w-10 h-10 text-[#00D4AA] mb-6 stroke-[1.5]" />
+            <h3 className="text-3xl font-serif mb-3">Contextual Understanding</h3>
+            <p className="text-white/50 font-light max-w-md">
+              "Get the ingredients for lasagna, but make it gluten-free." We understand recipes, dietary limits, and your past preferences instantly.
             </p>
-            <Link
-              to="/products"
-              className="inline-block px-8 md:px-10 py-4 md:py-5 bg-white text-indigo-600 font-bold rounded-full hover:shadow-2xl hover:scale-105 transition-all duration-200 text-base md:text-lg"
-            >
-              Get Started Now →
-            </Link>
           </motion.div>
+
+          {/* Box 2: Square */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ delay: 0.1 }}
+            className="bg-white text-[#0A0A0F] rounded-[2rem] p-10 relative overflow-hidden flex flex-col justify-between"
+          >
+            <Fingerprint className="w-10 h-10 text-[#6C63FF] stroke-[1.5]" />
+            <div>
+              <h3 className="text-2xl font-serif mb-2 font-medium tracking-tight">Zero Carts</h3>
+              <p className="text-[#0A0A0F]/60 text-sm font-light">Say the word, and it's already dispatched to your door.</p>
+            </div>
+          </motion.div>
+
+          {/* Box 3: Square */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ delay: 0.2 }}
+            className="bg-white/[0.01] border border-white/5 backdrop-blur-3xl rounded-[2rem] p-10 flex flex-col justify-center items-center text-center shadow-2xl"
+          >
+            <h2 className="text-6xl font-serif text-white tracking-tighter mb-2">0.2s</h2>
+            <p className="text-white/40 font-light text-sm uppercase tracking-widest">Processing Speed</p>
+          </motion.div>
+
+          {/* Box 4: Spans 2 columns */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ delay: 0.3 }}
+            className="md:col-span-2 bg-white/[0.01] rounded-[2rem] p-10 border border-white/5 backdrop-blur-3xl shadow-2xl flex items-center justify-between"
+          >
+            <div>
+              <h3 className="text-3xl font-serif mb-3">Live Inventory Sync</h3>
+              <p className="text-white/50 font-light max-w-sm">
+                If the organic apples are out, we suggest the closest local alternative mid-sentence.
+              </p>
+            </div>
+            <div className="hidden md:flex gap-3">
+              <span className="px-4 py-2 bg-white/5 rounded-full text-sm border border-white/5 text-white/80">Apples ✅</span>
+              <span className="px-4 py-2 bg-white/5 rounded-full text-sm border border-white/5 text-white/80">Almond Milk ✅</span>
+            </div>
+          </motion.div>
+
         </div>
       </section>
 
-      {/* Chatbot Modal */}
-      {isChatOpen && <ChatbotModal open={isChatOpen} onClose={() => setIsChatOpen(false)} />}
+      {/* --- MINIMALIST MARQUEE --- */}
+      <section className="py-20 border-y border-white/5 bg-white/[0.01] relative z-10 overflow-hidden flex">
+        <motion.div
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+          className="flex whitespace-nowrap"
+        >
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="flex gap-16 px-8 items-center text-5xl md:text-7xl font-serif italic text-white/[0.03]">
+              <span>Fresh</span> <span>•</span>
+              <span>Organic</span> <span>•</span>
+              <span>Local</span> <span>•</span>
+              <span>Instant</span> <span>•</span>
+            </div>
+          ))}
+        </motion.div>
+      </section>
+
+      {/* --- FOOTER CTA --- */}
+      <section className="relative z-10 py-32 px-6 flex flex-col items-center text-center">
+        <h2 className="text-5xl md:text-7xl font-serif tracking-tighter mb-8">Ready to clear your mind?</h2>
+        <button className="group flex items-center gap-3 bg-white text-[#0A0A0F] px-8 py-4 rounded-full text-lg font-medium hover:scale-105 active:scale-95 transition-transform duration-300">
+          Start speaking
+          <ArrowRight className="w-5 h-5 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+        </button>
+      </section>
+
     </div>
   );
 };

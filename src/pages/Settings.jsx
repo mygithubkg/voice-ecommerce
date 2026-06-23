@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { Bell, Globe, ShieldAlert, Check, Sparkles, SlidersHorizontal, ShieldCheck } from "lucide-react";
 
 const Settings = () => {
   const { user, userProfile, signOut, updateSettings } = useAuth();
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
 
-  // Settings state
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [orderUpdates, setOrderUpdates] = useState(true);
   const [promotionalEmails, setPromotionalEmails] = useState(false);
@@ -17,7 +17,6 @@ const Settings = () => {
   const [language, setLanguage] = useState("en");
   const [currency, setCurrency] = useState("USD");
 
-  // Load settings from userProfile when it changes
   useEffect(() => {
     if (userProfile?.settings) {
       setEmailNotifications(userProfile.settings.emailNotifications ?? true);
@@ -34,225 +33,204 @@ const Settings = () => {
     try {
       setIsSaving(true);
       await updateSettings({
-        emailNotifications,
-        orderUpdates,
-        promotionalEmails,
-        voiceCommands,
-        autoSave,
-        language,
-        currency,
+        emailNotifications, orderUpdates, promotionalEmails,
+        voiceCommands, autoSave, language, currency,
       });
-      alert("Settings saved successfully!");
+      // Optional: Add a brief timeout to show the success state before resetting the button
+      setTimeout(() => setIsSaving(false), 800);
     } catch (error) {
       console.error("Error saving settings:", error);
-      alert("Failed to save settings. Please try again.");
-    } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteAccount = () => {
-    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-      // In a real app, you would delete the user account here
-      console.log("Deleting account...");
+    if (window.confirm("Are you certain you wish to terminate your account? This action is irreversible.")) {
       signOut();
       navigate("/");
     }
   };
 
+  // --- Unauthenticated State (Premium Frosted Glass) ---
   if (!user) {
     return (
-  <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">Please Sign In</h2>
-          <p className="text-slate-400 mb-6">You need to be signed in to access settings</p>
+      <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center p-6 relative overflow-hidden font-sans">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#6C63FF] opacity-[0.05] blur-[150px] rounded-full pointer-events-none"></div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white/[0.02] border border-white/5 backdrop-blur-3xl rounded-[2.5rem] p-12 text-center max-w-md w-full relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
+        >
+          <div className="w-20 h-20 bg-white/[0.03] border border-white/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+            <ShieldCheck className="w-8 h-8 text-[#00D4AA] stroke-[1.5]" />
+          </div>
+          <h2 className="text-3xl font-serif text-white mb-3 tracking-tight">Identity Required</h2>
+          <p className="text-white/40 font-light mb-8 leading-relaxed">Please authenticate your session to calibrate your system settings.</p>
           <button
             onClick={() => navigate("/")}
-            className="px-6 py-3 bg-linear-to-r from-indigo-600 to-cyan-600 text-white rounded-lg hover:from-indigo-700 hover:to-cyan-700 transition-all"
+            className="w-full px-8 py-4 bg-white text-[#0A0A0F] font-medium rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
           >
-            Go to Home
+            Return to Initialization
           </button>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
+  // --- Authenticated State ---
   return (
-  <div className="min-h-screen bg-slate-900">
-      <div className="container mx-auto px-4 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto"
-        >
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold bg-linear-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent mb-2">
-              Settings
+    <div className="min-h-screen bg-[#0A0A0F] pt-32 pb-24 px-6 lg:px-12 relative overflow-hidden font-sans">
+
+      {/* Editorial Ambient Glows */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#6C63FF] opacity-[0.02] blur-[150px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/4"></div>
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#00D4AA] opacity-[0.02] blur-[150px] rounded-full pointer-events-none translate-y-1/3 -translate-x-1/4"></div>
+
+      <div className="max-w-[1200px] mx-auto w-full relative z-10">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} className="space-y-12">
+
+          {/* Cinematic Header */}
+          <div className="flex items-baseline gap-4">
+            <h1 className="text-5xl lg:text-7xl font-serif text-white tracking-tighter">
+              system preferences.
             </h1>
-            <p className="text-slate-400">Manage your account preferences and settings</p>
+            <motion.div
+              animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              className="w-2.5 h-2.5 rounded-full bg-[#6C63FF] mb-2 lg:mb-4"
+            />
           </div>
 
-          {/* Notifications Section */}
-          <div className="bg-slate-800 rounded-2xl shadow-xl p-8 mb-6">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-              <svg className="w-6 h-6 mr-3 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-              Notifications
-            </h2>
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
 
-            <div className="space-y-4">
-              <ToggleSetting
-                label="Email Notifications"
-                description="Receive email notifications about your account"
-                checked={emailNotifications}
-                onChange={setEmailNotifications}
-              />
-              <ToggleSetting
-                label="Order Updates"
-                description="Get notified about order status changes"
-                checked={orderUpdates}
-                onChange={setOrderUpdates}
-              />
-              <ToggleSetting
-                label="Promotional Emails"
-                description="Receive emails about special offers and promotions"
-                checked={promotionalEmails}
-                onChange={setPromotionalEmails}
-              />
+            {/* Left Sidebar / Navigation (Desktop) */}
+            <div className="lg:col-span-4 space-y-3 sticky top-32">
+              <button className="w-full text-left px-6 py-4 bg-white/[0.03] border border-white/10 rounded-[1.5rem] flex items-center gap-4 group transition-all duration-300">
+                <div className="w-10 h-10 rounded-full bg-white/[0.05] flex items-center justify-center text-white group-hover:text-[#6C63FF] transition-colors">
+                  <Bell className="w-4 h-4 stroke-[1.5]" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium">Signals</h3>
+                  <p className="text-white/40 text-xs font-light">Alerts & communications</p>
+                </div>
+              </button>
+
+              <button className="w-full text-left px-6 py-4 border border-transparent hover:bg-white/[0.02] hover:border-white/5 rounded-[1.5rem] flex items-center gap-4 group transition-all duration-300">
+                <div className="w-10 h-10 rounded-full bg-transparent border border-white/10 flex items-center justify-center text-white/50 group-hover:text-[#00D4AA] group-hover:border-[#00D4AA]/30 transition-colors">
+                  <SlidersHorizontal className="w-4 h-4 stroke-[1.5]" />
+                </div>
+                <div>
+                  <h3 className="text-white/70 group-hover:text-white transition-colors font-medium">Parameters</h3>
+                  <p className="text-white/30 text-xs font-light">Language, currency & voice</p>
+                </div>
+              </button>
+
+              <button className="w-full text-left px-6 py-4 border border-transparent hover:bg-white/[0.02] hover:border-white/5 rounded-[1.5rem] flex items-center gap-4 group transition-all duration-300">
+                <div className="w-10 h-10 rounded-full bg-transparent border border-white/10 flex items-center justify-center text-white/50 group-hover:text-red-400 group-hover:border-red-400/30 transition-colors">
+                  <ShieldAlert className="w-4 h-4 stroke-[1.5]" />
+                </div>
+                <div>
+                  <h3 className="text-white/70 group-hover:text-white transition-colors font-medium">Security</h3>
+                  <p className="text-white/30 text-xs font-light">Data & account deletion</p>
+                </div>
+              </button>
             </div>
-          </div>
 
-          {/* Preferences Section */}
-          <div className="bg-slate-800 rounded-2xl shadow-xl p-8 mb-6">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-              <svg className="w-6 h-6 mr-3 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-              </svg>
-              Preferences
-            </h2>
+            {/* Main Content Area */}
+            <div className="lg:col-span-8 space-y-10">
 
-            <div className="space-y-6">
-              <ToggleSetting
-                label="Voice Commands"
-                description="Enable voice control for shopping"
-                checked={voiceCommands}
-                onChange={setVoiceCommands}
-              />
-              <ToggleSetting
-                label="Auto-save Cart"
-                description="Automatically save your cart items"
-                checked={autoSave}
-                onChange={setAutoSave}
-              />
-
-              <div>
-                <label className="block text-slate-400 mb-2 text-sm font-medium">
-                  Language
-                </label>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg border border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-                >
-                  <option value="en">English</option>
-                  <option value="es">Español</option>
-                  <option value="fr">Français</option>
-                  <option value="de">Deutsch</option>
-                  <option value="ja">日本語</option>
-                </select>
+              {/* 1. Notifications Panel */}
+              <div className="bg-white/[0.02] border border-white/5 backdrop-blur-3xl rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-3 mb-8">
+                  <Sparkles className="w-5 h-5 text-[#6C63FF]" />
+                  <h2 className="text-2xl font-serif text-white tracking-tight">Signals</h2>
+                </div>
+                <div className="space-y-4">
+                  <ToggleSetting label="System Transmissions" desc="Receive critical email updates regarding your account status." checked={emailNotifications} onChange={setEmailNotifications} />
+                  <ToggleSetting label="Fulfillment Tracking" desc="Real-time pings on your cart dispatch and delivery." checked={orderUpdates} onChange={setOrderUpdates} />
+                  <ToggleSetting label="Curated Offers" desc="Occasional insights and early access to premium inventory." checked={promotionalEmails} onChange={setPromotionalEmails} />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-slate-400 mb-2 text-sm font-medium">
-                  Currency
-                </label>
-                <select
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg border border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-                >
-                  <option value="USD">USD - US Dollar</option>
-                  <option value="EUR">EUR - Euro</option>
-                  <option value="GBP">GBP - British Pound</option>
-                  <option value="JPY">JPY - Japanese Yen</option>
-                  <option value="INR">INR - Indian Rupee</option>
-                </select>
+              {/* 2. Preferences Panel */}
+              <div className="bg-white/[0.02] border border-white/5 backdrop-blur-3xl rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-3 mb-8">
+                  <Globe className="w-5 h-5 text-[#00D4AA] stroke-[1.5]" />
+                  <h2 className="text-2xl font-serif text-white tracking-tight">Parameters</h2>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  <ToggleSetting label="Spatial Voice Engine" desc="Allow continuous local microphone access for instant commands." checked={voiceCommands} onChange={setVoiceCommands} />
+                  <ToggleSetting label="Persistent Cart" desc="Maintain your items securely across different sessions." checked={autoSave} onChange={setAutoSave} />
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-6 pt-8 border-t border-white/5">
+                  <div className="relative">
+                    <label className="block text-[10px] font-medium text-[#00D4AA] uppercase tracking-[0.2em] mb-3 pl-4">Linguistics</label>
+                    <select value={language} onChange={(e) => setLanguage(e.target.value)} className="w-full bg-white/[0.03] border border-white/10 rounded-full text-white font-light px-6 py-4 focus:outline-none focus:border-white/30 focus:bg-white/[0.05] appearance-none transition-all cursor-pointer">
+                      <option value="en" className="bg-[#0A0A0F]">English</option>
+                      <option value="es" className="bg-[#0A0A0F]">Español</option>
+                      <option value="fr" className="bg-[#0A0A0F]">Français</option>
+                    </select>
+                  </div>
+
+                  <div className="relative">
+                    <label className="block text-[10px] font-medium text-[#00D4AA] uppercase tracking-[0.2em] mb-3 pl-4">Currency</label>
+                    <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full bg-white/[0.03] border border-white/10 rounded-full text-white font-light px-6 py-4 focus:outline-none focus:border-white/30 focus:bg-white/[0.05] appearance-none transition-all cursor-pointer">
+                      <option value="USD" className="bg-[#0A0A0F]">USD ($)</option>
+                      <option value="EUR" className="bg-[#0A0A0F]">EUR (€)</option>
+                      <option value="GBP" className="bg-[#0A0A0F]">GBP (£)</option>
+                    </select>
+                  </div>
+                </div>
               </div>
+
+              {/* 3. Global Action */}
+              <div className="flex justify-end">
+                <button
+                  onClick={handleSaveSettings}
+                  disabled={isSaving}
+                  className="w-full sm:w-auto px-10 py-4 bg-white text-[#0A0A0F] font-medium rounded-full transition-all duration-300 flex items-center justify-center gap-3 disabled:bg-white/10 disabled:text-white/50 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <AnimatePresence mode="wait">
+                    {isSaving ? (
+                      <motion.div key="saving" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2">
+                        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} className="w-4 h-4 border-2 border-black/20 border-t-[#0A0A0F] rounded-full" />
+                        <span>Calibrating...</span>
+                      </motion.div>
+                    ) : (
+                      <motion.div key="save" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2">
+                        <Check className="w-4 h-4" />
+                        <span>Lock Configuration</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </button>
+              </div>
+
+              {/* 4. Danger Zone */}
+              <div className="bg-red-500/[0.02] border border-red-500/10 rounded-[2.5rem] p-8 sm:p-10 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-red-500/0 group-hover:bg-red-500/[0.02] transition-colors duration-500"></div>
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                  <div>
+                    <h2 className="text-xl font-serif text-white tracking-tight mb-2 flex items-center gap-3">
+                      <ShieldAlert className="w-5 h-5 text-red-400 stroke-[1.5]" />
+                      Irreversible Action
+                    </h2>
+                    <p className="text-white/40 font-light text-sm max-w-md leading-relaxed">
+                      Eradicating your profile will wipe all historical ledgers, preferences, and voice data completely.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleDeleteAccount}
+                    className="px-8 py-3.5 bg-transparent border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white hover:border-red-500 font-medium rounded-full transition-colors shrink-0"
+                  >
+                    Terminate Identity
+                  </button>
+                </div>
+              </div>
+
             </div>
-          </div>
-
-          {/* Privacy & Security Section */}
-          <div className="bg-slate-800 rounded-2xl shadow-xl p-8 mb-6">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-              <svg className="w-6 h-6 mr-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              Privacy & Security
-            </h2>
-
-            <div className="space-y-4">
-              <button
-                onClick={() => navigate("/profile")}
-                className="w-full flex items-center justify-between px-6 py-4 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all group"
-              >
-                <span className="font-medium">Manage Profile</span>
-                <svg className="w-5 h-5 text-slate-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              <button
-                onClick={() => alert("Password change functionality would be implemented here")}
-                className="w-full flex items-center justify-between px-6 py-4 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all group"
-              >
-                <span className="font-medium">Change Password</span>
-                <svg className="w-5 h-5 text-slate-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              <button
-                onClick={() => alert("Privacy settings would be managed here")}
-                className="w-full flex items-center justify-between px-6 py-4 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all group"
-              >
-                <span className="font-medium">Privacy Settings</span>
-                <svg className="w-5 h-5 text-slate-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-4">
-            <button
-              onClick={handleSaveSettings}
-              disabled={isSaving}
-              className="flex-1 px-6 py-4 bg-linear-to-r from-indigo-600 to-cyan-600 text-white rounded-lg hover:from-indigo-700 hover:to-cyan-700 transition-all font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSaving ? "Saving..." : "Save All Settings"}
-            </button>
-          </div>
-
-          {/* Danger Zone */}
-          <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-8 mt-8">
-            <h2 className="text-xl font-bold text-red-400 mb-4 flex items-center">
-              <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              Danger Zone
-            </h2>
-            <p className="text-slate-400 mb-4">
-              Once you delete your account, there is no going back. Please be certain.
-            </p>
-            <button
-              onClick={handleDeleteAccount}
-              className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium"
-            >
-              Delete Account
-            </button>
           </div>
         </motion.div>
       </div>
@@ -260,28 +238,26 @@ const Settings = () => {
   );
 };
 
-// Toggle Setting Component
-const ToggleSetting = ({ label, description, checked, onChange }) => {
-  return (
-    <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-all">
-      <div className="flex-1">
-        <h3 className="text-white font-medium mb-1">{label}</h3>
-        <p className="text-slate-400 text-sm">{description}</p>
-      </div>
-      <button
-        onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-          checked ? "bg-linear-to-r from-indigo-600 to-cyan-600" : "bg-slate-600"
-        }`}
-      >
-        <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-            checked ? "translate-x-6" : "translate-x-1"
-          }`}
-        />
-      </button>
+// Premium Toggle Component
+const ToggleSetting = ({ label, desc, checked, onChange }) => (
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-white/[0.01] hover:bg-white/[0.02] border border-white/5 rounded-[1.5rem] transition-colors">
+    <div className="pr-4">
+      <h3 className="text-white font-medium mb-1">{label}</h3>
+      <p className="text-white/40 font-light text-sm leading-relaxed">{desc}</p>
     </div>
-  );
-};
+    <button
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 ${checked ? "bg-[#00D4AA]" : "bg-white/10"}`}
+    >
+      <span className="sr-only">Toggle {label}</span>
+      <motion.span
+        layout
+        className={`inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform`}
+        animate={{ x: checked ? 24 : 4 }}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+      />
+    </button>
+  </div>
+);
 
 export default Settings;

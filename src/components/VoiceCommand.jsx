@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-// DO NOT import useVoiceCommand from itself
+import { Mic, X, CheckCircle2 } from "lucide-react";
 import { products } from "./ProductList";
 
 const getSpeechRecognition = () => {
@@ -14,6 +14,7 @@ export function useVoiceCommand({ onAddToCart, onRemoveFromCart, onNavigate }) {
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const startListening = () => {
     const SpeechRecognition = getSpeechRecognition();
@@ -23,56 +24,75 @@ export function useVoiceCommand({ onAddToCart, onRemoveFromCart, onNavigate }) {
     }
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
-    recognition.interimResults = false;
+    recognition.interimResults = true;
+    
     let actionTaken = false;
+
     recognition.onresult = async (event) => {
-      const finalTranscript = event.results[0][0].transcript;
-      setTranscript(finalTranscript);
-      try {
-        const res = await fetch(`${backendURL}/voice-command`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ command: finalTranscript }),
-        });
-        const data = await res.json();
-        if (Array.isArray(data.actions)) {
-          let errorShown = false;
-          data.actions.forEach((item) => {
-            const matchedProduct = products.find(
-              (p) => normalize(p.name) === normalize(item.product)
-            );
-            if (!matchedProduct) {
-              if (!errorShown) {
-                setError(`❌ Product '${item.product}' is not available.`);
-                errorShown = true;
-              }
-              return;
-            }
-            if (item.action === "add") {
-              onAddToCart && onAddToCart(matchedProduct, item.quantity);
-              actionTaken = true;
-            } else if (item.action === "remove") {
-              onRemoveFromCart && onRemoveFromCart(matchedProduct, item.quantity);
-              actionTaken = true;
-            } else if (item.action === "navigate" && onNavigate) {
-              onNavigate(item.target);
-              actionTaken = true;
-            } else {
-              setError("⚠️ Unknown action received.");
-            }
+      const current = event.resultIndex;
+      const t = event.results[current][0].transcript;
+      setTranscript(t);
+
+      if (event.results[current].isFinal) {
+        try {
+          const res = await fetch(`${backendURL}/voice-command`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ command: t }),
           });
+          const data = await res.json();
+          if (Array.isArray(data.actions)) {
+            let errorShown = false;
+            data.actions.forEach((item) => {
+              const matchedProduct = products.find(
+                (p) => normalize(p.name) === normalize(item.product)
+              );
+              if (!matchedProduct) {
+                if (!errorShown) {
+                  setError(`Product '${item.product}' is not available.`);
+                  errorShown = true;
+                }
+                return;
+              }
+              if (item.action === "add") {
+                onAddToCart && onAddToCart(matchedProduct, item.quantity);
+                actionTaken = true;
+              } else if (item.action === "remove") {
+                onRemoveFromCart && onRemoveFromCart(matchedProduct, item.quantity);
+                actionTaken = true;
+              } else if (item.action === "navigate" && onNavigate) {
+                onNavigate(item.target);
+                actionTaken = true;
+              }
+            });
+          }
+          if (actionTaken) {
+            setSuccess(true);
+            setTimeout(() => {
+              setSuccess(false);
+              setListening(false);
+            }, 2000);
+          } else {
+            setError("Command not understood. Try again.");
+          }
+        } catch (err) {
+          setError("Backend error. Try again later.");
         }
-        if (!actionTaken) {
-          setError("❌ Command not understood. Try again.");
-        }
-      } catch (err) {
-        setError("⚠️ Backend error. Try again later.");
       }
     };
+
     recognition.onerror = (e) => {
-      setError("🎤 Speech recognition error: " + e.error);
+      setError("Speech error: " + e.error);
+      setListening(false);
     };
-    recognition.onend = () => setListening(false);
+
+    recognition.onend = () => {
+      if (!actionTaken) setListening(false);
+    };
+
+    setError("");
+    setSuccess(false);
+    setTranscript("");
     recognition.start();
     setListening(true);
   };
@@ -86,74 +106,119 @@ export function useVoiceCommand({ onAddToCart, onRemoveFromCart, onNavigate }) {
     listening,
     transcript,
     error,
+    success,
     startListening,
     stopListening,
-    setTranscript,
-    setError,
   };
 }
 
-const VoiceCommand = ({ onAddToCart, onRemoveFromCart, closeVoice }) => {
+const VoiceCommand = ({ onAddToCart, onRemoveFromCart }) => {
   const {
     listening,
     transcript,
     error,
+    success,
     startListening,
     stopListening,
-    setTranscript,
   } = useVoiceCommand({ onAddToCart, onRemoveFromCart });
 
+  // Floating Action Button
   return (
-    <motion.div
-      className="bg-white/70 backdrop-blur-lg border border-indigo-100 p-8 rounded-3xl shadow-2xl max-w-md mx-auto mt-8 relative"
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      {closeVoice && (
-        <button
-          className="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-3xl font-bold"
-          onClick={closeVoice}
-          aria-label="Close Voice"
-        >
-          ×
-        </button>
-      )}
-      <div className="flex flex-col items-center gap-4">
-        <div className={`rounded-full p-4 shadow-lg ${listening ? 'bg-red-100' : 'bg-blue-100'} transition-colors duration-200`}>
-          <svg className={`w-10 h-10 ${listening ? 'text-red-500 animate-pulse' : 'text-blue-600'}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75v1.5m0 0a6.75 6.75 0 01-6.75-6.75h1.5A5.25 5.25 0 0012 19.5a5.25 5.25 0 005.25-5.25h1.5A6.75 6.75 0 0112 20.25zm0-15v6.75m0 0a2.25 2.25 0 002.25-2.25V5.25A2.25 2.25 0 0012 3a2.25 2.25 0 00-2.25 2.25v6.75A2.25 2.25 0 0012 12.75z" />
-          </svg>
-        </div>
+    <>
+      <div className="fixed bottom-6 left-6 z-[100]">
+        {/* Sonar Ripple effect when listening */}
+        {listening && (
+          <>
+            <motion.div
+              animate={{ scale: [1, 1.4, 1.7], opacity: [0.6, 0.3, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "easeOut" }}
+              className="absolute inset-0 bg-[#6C63FF] rounded-full pointer-events-none"
+            />
+            <motion.div
+              animate={{ scale: [1, 1.3, 1.5], opacity: [0.5, 0.2, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5, delay: 0.5, ease: "easeOut" }}
+              className="absolute inset-0 bg-[#FF4D6D] rounded-full pointer-events-none"
+            />
+          </>
+        )}
+        
         <motion.button
+          whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           onClick={listening ? stopListening : startListening}
-          className={`w-full py-3 px-5 rounded-full text-white font-semibold text-lg shadow-lg transition-colors duration-200 ${listening ? "bg-red-500 hover:bg-red-600" : "bg-blue-600 hover:bg-blue-700"}`}
+          className={`relative w-14 h-14 rounded-full flex items-center justify-center text-white shadow-2xl z-10 transition-colors ${
+            listening ? "bg-gradient-to-r from-[#6C63FF] to-[#FF4D6D]" : "bg-[#6C63FF] hover:bg-[#5b54d6]"
+          }`}
         >
-          {listening ? "🛑 Stop Listening" : "🎙️ Start Voice Command"}
+          <Mic className="w-6 h-6" />
         </motion.button>
-        <AnimatePresence>
-          {transcript && (
-            <motion.p
-              key="transcript"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="mt-2 text-gray-800 text-center text-base font-medium"
-            >
-              <strong>Heard:</strong> "{transcript}"
-            </motion.p>
-          )}
-        </AnimatePresence>
-        {error && (
-          <p className="text-red-600 mt-2 text-sm text-center font-semibold">{error}</p>
-        )}
-        <p className="text-xs text-gray-500 mt-2 text-center">
-          Try saying: <strong>"I want 2 apples and 1 banana"</strong>
-        </p>
       </div>
-    </motion.div>
+
+      {/* Voice Input Modal */}
+      <AnimatePresence>
+        {listening && (
+          <motion.div
+            initial={{ opacity: 0, y: "100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: "100%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed bottom-0 left-0 right-0 z-[110] flex justify-center p-4 pointer-events-none"
+          >
+            <div className="bg-[#111118] border border-[rgba(255,255,255,0.1)] rounded-3xl p-8 max-w-lg w-full shadow-[0_0_50px_rgba(0,0,0,0.5)] pointer-events-auto flex flex-col items-center">
+              
+              <button 
+                onClick={stopListening}
+                className="absolute top-4 right-4 text-[#5A5A6E] hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {success ? (
+                <motion.div 
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="flex flex-col items-center gap-4 py-8"
+                >
+                  <motion.div 
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <CheckCircle2 className="w-16 h-16 text-[#00D4AA]" />
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-white">Got it!</h3>
+                </motion.div>
+              ) : (
+                <>
+                  <h3 className="text-[#9898A8] font-medium mb-8">Listening... tap mic to stop</h3>
+                  
+                  {/* Waveform Visualization */}
+                  <div className="flex items-center justify-center gap-1.5 h-20 mb-8">
+                    {[...Array(20)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        animate={{ height: [10, Math.random() * 60 + 20, 10] }}
+                        transition={{ repeat: Infinity, duration: Math.random() * 0.5 + 0.5, ease: "easeInOut" }}
+                        className="w-1.5 bg-[#6C63FF] rounded-full"
+                      />
+                    ))}
+                  </div>
+
+                  <p className="text-center text-xl font-display text-white min-h-[60px] italic opacity-80">
+                    {transcript || "Say something like 'Add 2 apples'..."}
+                  </p>
+
+                  {error && (
+                    <p className="text-[#FF4D6D] text-sm mt-4 text-center">{error}</p>
+                  )}
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
-export default VoiceCommand; 
+export default VoiceCommand;

@@ -201,10 +201,10 @@ AI Assistant:`;
     const response = await axios.post(
       GROQ_URL,
       {
-        model: "llama3-8b-8192",
+        model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
-        max_tokens: 200,
+        max_completion_tokens: 200,
       },
       {
         headers: {
@@ -266,10 +266,10 @@ Output:`;
     const response = await axios.post(
       GROQ_URL,
       {
-        model: "llama3-8b-8192",
+        model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.5,
-        max_tokens: 500,
+        max_completion_tokens: 500,
       },
       {
         headers: {

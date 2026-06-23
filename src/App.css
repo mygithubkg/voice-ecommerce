@@ -1,26 +1,31 @@
-/* Additional App-specific styles */
+/* Updated App-specific styles for the "Aura" aesthetic */
 
-html, body {
+html,
+body {
   width: 100%;
-  font-family: 'Source Sans 3', 'Inter', 'Roboto', 'Segoe UI', sans-serif;
-  background: #0f172a;
-  color: #cbd5e1;
-  letter-spacing: 0.01em;
-  line-height: 1.65;
+  font-family: 'Inter', 'Roboto', 'Segoe UI', sans-serif;
+  background: #F8F9FA;
+  /* Cloud White background */
+  color: #1A1A1A;
+  /* Soft black text */
+  line-height: 1.6;
 }
 
+/* Minimal, professional scrollbar for light mode */
 ::-webkit-scrollbar {
   width: 8px;
-  background: #1e293b;
+  background: #F8F9FA;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  background: #D1D5DB;
+  /* Subtle light gray */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #0891b2 100%);
+  background: #9CA3AF;
+  /* Slightly darker gray on hover */
 }
 
 /* Ensure proper rendering of components */

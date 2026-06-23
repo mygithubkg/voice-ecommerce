@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import LandingPage from "./pages/LandingPage";
@@ -12,81 +14,101 @@ import FAQ from "./pages/FAQ";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import ChatbotModal from "./components/ChatbotModal";
+import VoiceCommand from "./components/VoiceCommand";
+import ScrollToTop from "./components/ScrollToTop";
+import ErrorBoundary from "./components/ErrorBoundary";
+
 import { CartProvider, useCart } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
-import VoiceCommand from "./components/VoiceCommand";
-import PageContainer from "./components/PageContainer";
-import ScrollToTop from "./components/ScrollToTop";
+import { ToastProvider } from "./context/ToastContext";
+
+// Page transition wrapper
+const PageWrapper = ({ children }) => {
+  const shouldAnimate = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!shouldAnimate) return <>{children}</>;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -16 }}
+      transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+      className="w-full flex-1 flex flex-col"
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const AnimatedRoutes = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageWrapper><LandingPage /></PageWrapper>} />
+        <Route path="/home" element={<PageWrapper><Home /></PageWrapper>} />
+        <Route path="/products" element={<PageWrapper><Products /></PageWrapper>} />
+        <Route path="/cart" element={<PageWrapper><CartPage /></PageWrapper>} />
+        <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
+        <Route path="/contact" element={<PageWrapper><Contact /></PageWrapper>} />
+        <Route path="/faq" element={<PageWrapper><FAQ /></PageWrapper>} />
+        <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
+        <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
 
 function App() {
   const [showVoice, setShowVoice] = useState(false);
   const [chatbotOpen, setChatbotOpen] = useState(false);
 
   return (
-    <BrowserRouter>
-      <ScrollToTop />
-      <AuthProvider>
-        <CartProvider>
-          <div className="min-h-screen w-full bg-slate-900 flex flex-col">
-            <Navbar />
+    <ErrorBoundary>
+      <ToastProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <AuthProvider>
+            <CartProvider>
+              <div className="min-h-screen w-full bg-[#0A0A0F] text-[#F4F4F8] flex flex-col relative font-sans overflow-x-hidden selection:bg-[#6C63FF] selection:bg-opacity-30">
+                <Navbar />
 
-            {/* Main Page Routes */}
-            <main className="flex-1 w-full">
-              <Routes>
-                <Route path="/" element={<PageContainer fullWidth><LandingPage /></PageContainer>} />
-                <Route path="/home" element={<PageContainer><Home /></PageContainer>} />
-                <Route path="/products" element={<PageContainer><Products /></PageContainer>} />
-                <Route path="/cart" element={<PageContainer><CartPage /></PageContainer>} />
-                <Route path="/about" element={<PageContainer fullWidth><About /></PageContainer>} />
-                <Route path="/contact" element={<PageContainer><Contact /></PageContainer>} />
-                <Route path="/faq" element={<PageContainer><FAQ /></PageContainer>} />
-                <Route path="/profile" element={<PageContainer><Profile /></PageContainer>} />
-                <Route path="/settings" element={<PageContainer><Settings /></PageContainer>} />
-              </Routes>
-            </main>
+                {/* Main Page Routes */}
+                <main className="flex-1 w-full flex flex-col">
+                  <AnimatedRoutes />
+                </main>
 
-            {/* Voice Modal */}
-            {showVoice && (
-              <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-                <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative">
-                  <button
-                    className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-2xl font-bold"
-                    onClick={() => setShowVoice(false)}
-                  >
-                    ×
-                  </button>
-                  <VoiceCommandWrapper closeVoice={() => setShowVoice(false)} />
-                </div>
+                {/* Footer */}
+                <Footer />
+
+                {/* Global Utilities */}
+                <VoiceCommandWrapper
+                  showVoice={showVoice}
+                  closeVoice={() => setShowVoice(false)}
+                />
+
+                <ChatbotModal
+                  open={chatbotOpen}
+                  onClose={() => setChatbotOpen(false)}
+                />
               </div>
-            )}
-
-            {/* Chatbot Floating Button */}
-            <button
-              onClick={() => setChatbotOpen(true)}
-              className="fixed z-50 bottom-6 right-6 sm:bottom-8 sm:right-8 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full shadow-2xl p-4 sm:p-5 flex items-center gap-2 hover:scale-110 transition-all border-2 sm:border-4 border-white"
-              style={{ boxShadow: "0 12px 40px rgba(147, 51, 234, 0.4)" }}
-              title="Open Voice Assistant"
-            >
-              <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
-            </button>
-            <ChatbotModal open={chatbotOpen} onClose={() => setChatbotOpen(false)} />
-
-            <Footer />
-          </div>
-        </CartProvider>
-      </AuthProvider>
-    </BrowserRouter>
+            </CartProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }
 
-// Wrapper to inject context functions
-const VoiceCommandWrapper = ({ closeVoice }) => {
+// Wrapper to inject context functions into VoiceCommand
+const VoiceCommandWrapper = ({ showVoice, closeVoice }) => {
   const { addToCart, removeFromCart } = useCart();
 
   return (
     <VoiceCommand
+      isActive={showVoice}
       onAddToCart={addToCart}
       onRemoveFromCart={removeFromCart}
       closeVoice={closeVoice}

@@ -1,400 +1,303 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState } from "react";
 import { CartContext } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import generateInvoice from "../components/InvoiceGenerator"; // Assuming this file exists
+import { useToast } from "../context/ToastContext";
+import generateInvoice from "../components/InvoiceGenerator";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Plus, Minus, ArrowRight, ShoppingBag, Sparkles } from "lucide-react";
+import { icons } from "../assets/itemIcons";
 
 const CartPage = () => {
   const { items, removeFromCart, setQuantity, clearCart } = useContext(CartContext);
-  const { user, userProfile } = useAuth();
+  const { user } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const [buyer, setBuyer] = useState({ name: "", email: "", phone: "", address: "" });
-  const [step, setStep] = useState(0);
-  const [touched, setTouched] = useState({});
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-  // Auto-fill buyer information from user profile when available
-  useEffect(() => {
-    if (user && userProfile) {
-      setBuyer({
-        name: userProfile.displayName || user.displayName || "",
-        email: user.email || "",
-        phone: userProfile.phone || "",
-        address: userProfile.address || ""
-      });
+  const [promoCode, setPromoCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const tax = subtotal * 0.05;
+  const delivery = subtotal > 500 || subtotal === 0 ? 0 : 40;
+  const total = subtotal + tax + delivery - discount;
+
+  const handleApplyPromo = (e) => {
+    e.preventDefault();
+    if (promoCode.toUpperCase() === "VOICE20") {
+      setDiscount(subtotal * 0.2);
+      addToast("Promo code applied! 20% off.", "success");
+    } else {
+      setDiscount(0);
+      addToast("Invalid promo code.", "error");
     }
-  }, [user, userProfile]);
+  };
 
-  const handleProceedToBilling = () => {
-    // Check if user is logged in before proceeding to billing
+  const handleCheckout = () => {
     if (!user) {
-      setShowLoginPrompt(true);
+      addToast("Please sign in to complete checkout", "info");
+      navigate("/profile");
       return;
     }
-    setStep(1);
-  };
 
-  const handleLoginRedirect = () => {
-    // Navigate to home page where user can sign in
-    navigate("/");
-  };
-
-  const handleGenerate = async () => {
-    try {
-      // Make sure generateInvoice is a real function you've imported
-      if (generateInvoice) {
-         await generateInvoice(items, total, buyer);
-      } else {
-        console.warn("generateInvoice function is not imported or defined.");
-        // Fallback for demo
-        alert("Invoice generated (simulated)!");
-      }
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      addToast("Order placed successfully!", "success");
       clearCart();
       navigate("/");
-    } catch (err) {
-      console.error("Invoice generation failed:", err);
-    }
+    }, 1500);
   };
 
-  // Validation helpers
-  const errors = {
-    name: buyer.name && !/^[a-zA-Z ]{3,40}$/.test(buyer.name),
-    email: buyer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyer.email),
-    phone: buyer.phone && !/^\d{10}$/.test(buyer.phone),
-    address: buyer.address && (buyer.address.length < 10 || buyer.address.length > 100),
+  const handleDownloadInvoice = async () => {
+    if (!user) {
+      addToast("Please sign in to download invoice", "info");
+      return;
+    }
+    try {
+      const buyer = { name: user.displayName, email: user.email, phone: "", address: "" };
+      await generateInvoice(items, total, buyer);
+      addToast("Invoice downloaded successfully", "success");
+    } catch (err) {
+      addToast("Failed to generate invoice", "error");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 py-8 md:py-10 px-2 sm:px-4 md:px-8">
-      <div className="w-[95%] md:w-[90%] lg:w-4/5 max-w-[1600px] mx-auto text-base sm:text-lg">
-        {/* Stepper */}
-        <div className="flex items-center justify-center mb-8 md:mb-10">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full font-bold text-base sm:text-lg border-2 ${step === 0 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-800 text-indigo-400 border-slate-700'}`}>1</div>
-            <span className={`font-semibold text-sm sm:text-base ${step === 0 ? 'text-indigo-400' : 'text-slate-500'}`}>Cart</span>
-            <div className="w-8 sm:w-10 h-1 bg-slate-700 rounded"></div>
-            <div className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full font-bold text-base sm:text-lg border-2 ${step === 1 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-800 text-indigo-400 border-slate-700'}`}>2</div>
-            <span className={`font-semibold text-sm sm:text-base ${step === 1 ? 'text-indigo-400' : 'text-slate-500'}`}>Billing</span>
-          </div>
+    <div className="min-h-screen bg-[#0A0A0F] pt-32 pb-24 px-6 lg:px-12 relative overflow-hidden font-sans">
+
+      {/* Editorial Ambient Glow */}
+      <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#00D4AA] opacity-[0.03] blur-[150px] rounded-full pointer-events-none -translate-y-1/2"></div>
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#6C63FF] opacity-[0.03] blur-[150px] rounded-full pointer-events-none translate-y-1/2"></div>
+
+      <div className="max-w-[1200px] mx-auto w-full relative z-10">
+
+        {/* Editorial Header */}
+        <div className="mb-16 flex items-baseline gap-4">
+          <h1 className="text-5xl lg:text-7xl font-serif text-white tracking-tighter">
+            your cart.
+          </h1>
+          <span className="text-white/30 font-light text-2xl lg:text-3xl">({items.length})</span>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-12">
-          
-          {/* FIX #1: This entire div is now hidden on small screens if step is 1
-            This prevents the cart from showing up underneath the billing form on mobile.
-          */}
-          <div className={`${step === 1 ? 'hidden lg:block' : 'block'} lg:col-span-2 bg-slate-800 rounded-2xl md:rounded-3xl shadow-2xl p-5 md:p-10 border border-slate-700`}>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-6 md:mb-8 tracking-wide flex items-center gap-2 md:gap-3">
-              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7A2 2 0 007.48 19h8.04a2 2 0 001.83-1.3L17 13M7 13V6h13" />
-              </svg>
-              Your Cart
-            </h2>
+
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
+
+          {/* Left Column: Cart Items (60%) */}
+          <div className="w-full lg:w-[60%]">
             {items.length === 0 ? (
-              <p className="text-slate-400 text-base md:text-lg">Your cart is empty.</p>
-            ) : (
-              <div className="overflow-x-auto -mx-5 md:mx-0">
-                {/* Desktop Table View (Correctly hidden on mobile by `hidden md:table`) */}
-                <table className="hidden md:table min-w-full text-left border-separate border-spacing-y-2">
-                  <thead>
-                    <tr className="bg-slate-700">
-                      <th className="px-4 py-2 text-base md:text-lg font-bold text-indigo-400 rounded-l-xl">SNo</th>
-                      <th className="px-4 py-2 text-base md:text-lg font-bold text-indigo-400">Item</th>
-                      <th className="px-4 py-2 text-base md:text-lg font-bold text-indigo-400">Quantity</th>
-                      <th className="px-4 py-2 text-base md:text-lg font-bold text-indigo-400">Total Price</th>
-                      <th className="px-4 py-2 rounded-r-xl"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((item, idx) => (
-                      <tr key={item.id} className="bg-slate-700/50 shadow rounded-xl align-top">
-                        <td className="px-4 py-3 font-semibold text-slate-300 text-center">{idx + 1}</td>
-                        <td className="px-4 py-3">
-                          <div className="font-semibold text-white text-base">{item.name}</div>
-                          <div className="text-xs text-slate-400 mt-1">Price: <span className="font-bold text-indigo-400">${item.price.toFixed(2)}</span> / qty</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <button
-                              className="rounded-full bg-indigo-600 hover:bg-indigo-700 p-2 text-white transition"
-                              onClick={() => removeFromCart(item, 1)}
-                              title="Decrease"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/><path d="M8 12h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-                            </button>
-                            <input
-                              type="number"
-                              min="1"
-                              value={item.quantity}
-                              onChange={e => setQuantity(item, Number(e.target.value))}
-                              className="w-14 text-center border border-slate-600 bg-slate-800 text-white rounded px-1 py-0.5 font-semibold"
-                            />
-                            <button
-                              className="rounded-full bg-indigo-600 hover:bg-indigo-700 p-2 text-white transition"
-                              onClick={() => setQuantity(item, item.quantity + 1)}
-                              title="Increase"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/><path d="M12 8v8M8 12h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-                            </button>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 font-bold text-indigo-400 align-top">${(item.price * item.quantity).toFixed(2)}</td>
-                        <td className="px-4 py-3 align-top">
-                          <button
-                            className="bg-red-600 hover:bg-red-700 p-2 rounded-full text-white transition"
-                            onClick={() => setQuantity(item, 0)}
-                            title="Delete"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 7h12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0v10a2 2 0 002 2h2a2 2 0 002-2V7" /></svg>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                
-                {/* Mobile Card View (Correctly shown on mobile by `md:hidden`) */}
-                <div className="md:hidden space-y-4 px-5">
-                  {items.map((item, idx) => (
-                    <div key={item.id} className="bg-slate-700/50 rounded-xl p-4 shadow">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1">
-                          <div className="font-semibold text-white text-base">{item.name}</div>
-                          <div className="text-xs text-slate-400 mt-1">
-                            ${item.price.toFixed(2)} × {item.quantity} = <span className="font-bold text-indigo-400">${(item.price * item.quantity).toFixed(2)}</span>
-                          </div>
-                        </div>
-                        <button
-                          className="bg-red-600 hover:bg-red-700 p-2 rounded-full text-white transition ml-2"
-                          onClick={() => setQuantity(item, 0)}
-                          title="Delete"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 7h12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0v10a2 2 0 002 2h2a2 2 0 002-2V7" /></svg>
-                        </button>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-400 text-sm">Quantity:</span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            className="rounded-full bg-indigo-600 hover:bg-indigo-700 p-1.5 text-white transition"
-                            onClick={() => removeFromCart(item, 1)}
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/><path d="M8 12h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-                          </button>
-                          <input
-                            type="number"
-                            min="1"
-                            value={item.quantity}
-                            onChange={e => setQuantity(item, Number(e.target.value))}
-                            className="w-12 text-center border border-slate-600 bg-slate-800 text-white rounded px-1 py-1 font-semibold text-sm"
-                          />
-                          <button
-                            className="rounded-full bg-indigo-600 hover:bg-indigo-700 p-1.5 text-white transition"
-                            onClick={() => setQuantity(item, item.quantity + 1)}
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/><path d="M12 8v8M8 12h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div className="bg-white/[0.02] border border-white/5 backdrop-blur-3xl rounded-[2rem] p-16 flex flex-col items-center justify-center text-center min-h-[50vh]">
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                  className="mb-8 relative"
+                >
+                  <div className="w-32 h-32 bg-white/[0.02] rounded-full flex items-center justify-center border border-white/10 shadow-[0_0_50px_rgba(255,255,255,0.02)]">
+                    <ShoppingBag className="w-10 h-10 text-white/50 stroke-[1]" />
+                  </div>
+                </motion.div>
+                <h2 className="text-3xl font-serif text-white mb-4 tracking-tight">Your bag is empty</h2>
+                <p className="text-white/50 mb-10 max-w-sm font-light leading-relaxed">
+                  Summon your assistant to add items instantly, or browse our curated aisles.
+                </p>
+                <button
+                  onClick={() => navigate("/products")}
+                  className="px-8 py-3.5 bg-white text-[#0A0A0F] font-medium rounded-full hover:scale-105 active:scale-95 transition-all duration-300"
+                >
+                  Explore Aisles
+                </button>
               </div>
-            )}
-            <div className="mt-8 md:mt-10 text-right font-extrabold text-xl md:text-2xl text-indigo-400 border-t border-slate-700 pt-4 md:pt-6">
-              Grand Total: ${total.toFixed(2)}
-            </div>
-            {items.length > 0 && step === 0 && (
-              <button
-                onClick={handleProceedToBilling}
-                className="mt-8 md:mt-10 w-full bg-linear-to-r from-indigo-600 to-cyan-600 text-white px-6 md:px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-indigo-500/30 hover:scale-105 transition-all duration-200 text-base md:text-xl"
-              >
-                Proceed to Billing
-              </button>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <AnimatePresence mode="popLayout">
+                  {items.map((item) => (
+                    <motion.div
+                      layout
+                      key={item.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -50, filter: "blur(10px)" }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      className="group relative flex items-center gap-6 p-4 pr-6 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors duration-500"
+                    >
+                      {/* Item Icon Box */}
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/[0.03] border border-white/5 rounded-[1.5rem] flex items-center justify-center text-4xl flex-shrink-0 shadow-inner group-hover:bg-white/[0.05] transition-colors">
+                        {icons[item.name] || "🛒"}
+                      </div>
+
+                      {/* Item Details */}
+                      <div className="flex-1 min-w-0 py-2">
+                        <span className="text-[10px] font-medium text-[#00D4AA] uppercase tracking-[0.2em] mb-1.5 block">
+                          {item.categoryName || "Premium"}
+                        </span>
+                        <h3 className="font-serif text-white text-xl sm:text-2xl truncate mb-1">
+                          {item.name}
+                        </h3>
+                        <p className="text-white/40 text-sm font-light">
+                          ${item.price.toFixed(2)}
+                        </p>
+                      </div>
+
+                      {/* Controls */}
+                      <div className="flex items-center gap-6">
+                        <div className="hidden sm:flex items-center gap-1 bg-white/[0.03] border border-white/10 rounded-full p-1 shadow-inner">
+                          <button
+                            onClick={() => {
+                              if (item.quantity > 1) setQuantity(item, item.quantity - 1);
+                              else removeFromCart(item, 1);
+                            }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white/50 hover:bg-white/10 hover:text-white transition-colors"
+                          >
+                            <Minus className="w-4 h-4 stroke-[1.5]" />
+                          </button>
+                          <div className="w-6 flex justify-center overflow-hidden">
+                            <AnimatePresence mode="popLayout" initial={false}>
+                              <motion.span
+                                key={item.quantity}
+                                initial={{ y: -20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ y: 20, opacity: 0 }}
+                                className="text-white font-medium"
+                              >
+                                {item.quantity}
+                              </motion.span>
+                            </AnimatePresence>
+                          </div>
+                          <button
+                            onClick={() => setQuantity(item, item.quantity + 1)}
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white/50 hover:bg-white/10 hover:text-white transition-colors"
+                          >
+                            <Plus className="w-4 h-4 stroke-[1.5]" />
+                          </button>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-2">
+                          <span className="font-medium text-white text-lg">
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </span>
+                          <button
+                            onClick={() => removeFromCart(item, item.quantity)}
+                            className="text-white/20 hover:text-red-400 transition-colors duration-300"
+                          >
+                            <X className="w-5 h-5 stroke-[1.5]" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
             )}
           </div>
 
-          {/* FIX #2: This entire div is now hidden on small screens if step is 0
-            This prevents the "Invoice Summary" (the "distorted" cart) from
-            showing below the main cart on mobile.
-          */}
-          <div className={`${step === 0 ? 'hidden lg:flex' : 'flex'} flex-col gap-6 md:gap-8 w-full`}>
+          {/* Right Column: Order Summary (40%) */}
+          <div className="w-full lg:w-[40%] lg:sticky lg:top-32">
+            <div className="bg-white/[0.02] border border-white/10 backdrop-blur-3xl rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.5)] relative overflow-hidden">
 
-            {/* Invoice Summary */}
-            {step === 0 && (
-              <div className="hidden lg:block w-full bg-slate-800 rounded-xl md:rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
-                <div className="bg-linear-to-r from-indigo-600 to-cyan-600 px-4 md:px-6 py-3 md:py-4 flex items-center gap-2 md:gap-3">
-                  <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 14l2-2 4 4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <h3 className="text-xl md:text-2xl font-bold text-white">Invoice Summary</h3>
+              <h3 className="text-2xl font-serif text-white mb-8 tracking-tight">Summary</h3>
+
+              {/* Promo Code Pill Form */}
+              <form onSubmit={handleApplyPromo} className="mb-10 relative">
+                <div className="flex items-center w-full bg-white/5 border border-white/10 rounded-full p-1.5 focus-within:border-white/30 focus-within:bg-white/10 transition-all duration-300">
+                  <input
+                    type="text"
+                    placeholder="Promo code..."
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                    className="bg-transparent pl-5 pr-4 w-full outline-none text-white placeholder:text-white/30 font-light uppercase tracking-wider"
+                  />
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 shrink-0 bg-white/10 hover:bg-white text-white hover:text-[#0A0A0F] rounded-full font-medium transition-colors duration-300 text-sm"
+                  >
+                    Apply
+                  </button>
                 </div>
-                <div className="p-4 md:p-6">
-                  <table className="w-full text-sm md:text-base mb-4">
-                    <thead>
-                      <tr className="text-indigo-400 border-b border-slate-700">
-                        <th className="py-2 text-left font-semibold text-base md:text-lg">Item</th>
-                        <th className="py-2 text-center font-semibold">Qty</th>
-                        <th className="py-2 text-right font-semibold">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {items.map((item) => (
-                        <tr key={item.id} className="border-b border-slate-700 last:border-b-0">
-                          <td className="py-2 text-white text-base md:text-lg">{item.name}</td>
-                          <td className="py-2 text-center text-slate-300">{item.quantity}</td>
-                          <td className="py-2 text-right text-slate-300">${(item.price * item.quantity).toFixed(2)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <div className="flex items-center justify-between border-t border-slate-700 pt-4 mt-2">
-                    <span className="text-base md:text-lg font-semibold text-indigo-400 flex items-center gap-2">
-                      <svg className="w-4 h-4 md:w-5 md:h-5 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3z" /></svg>
-                      Total
+              </form>
+
+              {/* Ledger */}
+              <div className="space-y-5 mb-8 font-light">
+                <div className="flex justify-between text-white/60">
+                  <span>Subtotal</span>
+                  <span className="text-white font-medium">${subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-white/60">
+                  <span>Taxes (5%)</span>
+                  <span className="text-white font-medium">${tax.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-white/60">
+                  <span>Shipping</span>
+                  {delivery === 0 ? (
+                    <span className="text-[#00D4AA] font-medium flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" /> Complimentary
                     </span>
-                    <span className="text-2xl md:text-3xl font-bold text-white">${total.toFixed(2)}</span>
-                  </div>
+                  ) : (
+                    <span className="text-white font-medium">${delivery.toFixed(2)}</span>
+                  )}
                 </div>
+
+                <AnimatePresence>
+                  {discount > 0 && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="flex justify-between text-[#00D4AA] overflow-hidden"
+                    >
+                      <span>Discount applied</span>
+                      <span className="font-medium">-${discount.toFixed(2)}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            )}
-            {/* Billing Details */}
-            {step === 1 && (
-              <div className="w-full bg-slate-800 rounded-xl md:rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
-                <div className="bg-linear-to-r from-indigo-600 to-cyan-600 px-4 md:px-6 py-3 md:py-4 flex items-center gap-2 md:gap-3">
-                  <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 01-8 0" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 14v7m-4-4h8" />
-                  </svg>
-                  <h3 className="text-lg md:text-xl font-bold text-white tracking-wide">Billing Details</h3>
-                </div>
-                <form
-                  onSubmit={e => {
-                    e.preventDefault();
-                    const isValid =
-                      /^[a-zA-Z ]{3,40}$/.test(buyer.name) &&
-                      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyer.email) &&
-                      /^\d{10}$/.test(buyer.phone) &&
-                      buyer.address.length >= 10 &&
-                      buyer.address.length <= 100;
-                    if (isValid) {
-                      handleGenerate();
-                    } else {
-                      setTouched({ name: true, email: true, phone: true, address: true });
-                    }
-                  }}
-                  className="p-4 md:p-6 space-y-4 md:space-y-6"
+
+              {/* Total */}
+              <div className="border-t border-white/10 pt-8 mb-10 flex justify-between items-end">
+                <span className="text-white/60 font-light">Total</span>
+                <span className="text-5xl font-serif text-white tracking-tighter leading-none">
+                  ${total.toFixed(2)}
+                </span>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-4 relative z-10">
+                <button
+                  onClick={handleCheckout}
+                  disabled={items.length === 0 || isProcessing}
+                  className="w-full bg-white text-[#0A0A0F] disabled:bg-white/10 disabled:text-white/30 py-4 rounded-full font-medium transition-all duration-300 flex items-center justify-center gap-2 group hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  <div className="relative">
-                    <input
-                      className={`peer w-full border-b-2 bg-transparent px-2 pt-6 pb-2 text-base text-white focus:outline-none focus:border-indigo-500 transition ${errors.name && touched.name ? "border-red-500" : "border-slate-600"}`}
-                      type="text"
-                      placeholder=" "
-                      value={buyer.name}
-                      onChange={e => setBuyer({ ...buyer, name: e.target.value })}
-                      onBlur={() => setTouched(t => ({ ...t, name: true }))}
-                      required
+                  {isProcessing ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                      className="w-5 h-5 border-2 border-black/20 border-t-[#0A0A0F] rounded-full"
                     />
-                    <label className="absolute left-2 top-2 text-slate-400 text-sm transition-all peer-focus:text-indigo-400 peer-focus:top-0 peer-focus:text-xs peer-placeholder-shown:top-6 peer-placeholder-shown:text-base pointer-events-none">Name (Only letters, 3–40 chars)</label>
-                    {errors.name && touched.name && <div className="text-xs text-red-500 mt-1">Enter a valid name.</div>}
-                  </div>
-                  <div className="relative">
-                    <input
-                      className={`peer w-full border-b-2 bg-transparent px-2 pt-6 pb-2 text-base text-white focus:outline-none focus:border-indigo-500 transition ${errors.email && touched.email ? "border-red-500" : "border-slate-600"}`}
-                      type="email"
-                      placeholder=" "
-                      value={buyer.email}
-                      onChange={e => setBuyer({ ...buyer, email: e.target.value })}
-                      onBlur={() => setTouched(t => ({ ...t, email: true }))}
-                      required
-                    />
-                    <label className="absolute left-2 top-2 text-slate-400 text-sm transition-all peer-focus:text-indigo-400 peer-focus:top-0 peer-focus:text-xs peer-placeholder-shown:top-6 peer-placeholder-shown:text-base pointer-events-none">Email</label>
-                    {errors.email && touched.email && <div className="text-xs text-red-500 mt-1">Enter a valid email.</div>}
-                  </div>
-                  <div className="relative">
-                    <input
-                      className={`peer w-full border-b-2 bg-transparent px-2 pt-6 pb-2 text-base text-white focus:outline-none focus:border-indigo-500 transition ${errors.phone && touched.phone ? "border-red-500" : "border-slate-600"}`}
-                      type="text"
-                      placeholder=" "
-                      value={buyer.phone}
-                      onChange={e => setBuyer({ ...buyer, phone: e.target.value })}
-                      onBlur={() => setTouched(t => ({ ...t, phone: true }))}
-                      required
-                    />
-                    <label className="absolute left-2 top-2 text-slate-400 text-sm transition-all peer-focus:text-indigo-400 peer-focus:top-0 peer-focus:text-xs peer-placeholder-shown:top-6 peer-placeholder-shown:text-base pointer-events-none">Phone (10 digits)</label>
-                    {errors.phone && touched.phone && <div className="text-xs text-red-500 mt-1">Enter a valid phone number.</div>}
-                  </div>
-                  <div className="relative">
-                    <textarea
-                      className={`peer w-full border-b-2 bg-transparent px-2 pt-6 pb-2 text-base text-white focus:outline-none focus:border-indigo-500 transition ${errors.address && touched.address ? "border-red-500" : "border-slate-600"}`}
-                      rows={3}
-                      placeholder=" "
-                      value={buyer.address}
-                      onChange={e => setBuyer({ ...buyer, address: e.target.value })}
-                      onBlur={() => setTouched(t => ({ ...t, address: true }))}
-                      required
-                    ></textarea>
-                    <label className="absolute left-2 top-2 text-slate-400 text-sm transition-all peer-focus:text-indigo-400 peer-focus:top-0 peer-focus:text-xs peer-placeholder-shown:top-6 peer-placeholder-shown:text-base pointer-events-none">Address (10–100 characters)</label>
-                    {errors.address && touched.address && <div className="text-xs text-red-500 mt-1">Enter a valid address.</div>}
-                  </div>
-                  <div className="flex items-center justify-between border-t border-slate-700 pt-4 mt-2">
-                    <span className="text-base md:text-lg font-semibold text-indigo-400 flex items-center gap-2">
-                      <svg className="w-4 h-4 md:w-5 md:h-5 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3z" /></svg>
-                      Total
-                    </span>
-                    <span className="text-xl md:text-2xl font-bold text-white">${total.toFixed(2)}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 md:mt-8">
-                    <button
-                      type="button"
-                      onClick={() => setStep(0)}
-                      className="w-full sm:w-auto px-4 py-2 bg-slate-700 rounded hover:bg-slate-600 font-semibold text-white"
+                  ) : (
+                    <>
+                      Checkout Securely
+                      <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                    </>
+                  )}
+                </button>
+
+                <AnimatePresence>
+                  {items.length > 0 && (
+                    <motion.button
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={handleDownloadInvoice}
+                      className="w-full bg-transparent text-white/50 hover:text-white py-3 rounded-full font-light text-sm transition-colors flex items-center justify-center gap-2"
                     >
-                      Back to Cart
-                    </button>
-                    <button
-                      type="submit"
-                      className="w-full sm:w-auto px-6 md:px-8 py-2 bg-linear-to-r from-indigo-600 to-cyan-600 text-white rounded font-bold hover:shadow-indigo-500/30 hover:scale-105 transition-all shadow text-base md:text-lg"
-                    >
-                      Download Invoice
-                    </button>
-                  </div>
-                </form>
+                      Download Receipt
+                    </motion.button>
+                  )}
+                </AnimatePresence>
               </div>
-            )}
+
+            </div>
           </div>
         </div>
-
-        {/* Login Prompt Modal */}
-        {showLoginPrompt && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 max-w-md w-full">
-              <div className="flex items-center justify-center mb-6">
-                <svg className="w-16 h-16 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">Login Required</h2>
-              <p className="text-slate-400 mb-6 text-center">
-                Please sign in to proceed with billing. Your profile information will be automatically filled for a faster checkout experience.
-              </p>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setShowLoginPrompt(false)}
-                  className="flex-1 px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleLoginRedirect}
-                  className="flex-1 px-6 py-3 bg-linear-to-r from-indigo-600 to-cyan-600 text-white rounded-lg hover:from-indigo-700 hover:to-cyan-700 transition-all font-medium"
-                >
-                  Sign In
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

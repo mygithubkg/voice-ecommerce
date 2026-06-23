@@ -1,0 +1,50 @@
+/* AURA DESIGN SYSTEM TOKENS
+  All global design variables are stored here.
+*/
+
+:root {
+    /* =========================================
+     1. COLOR PRIMITIVES (The raw paint palette)
+     ========================================= */
+    --color-white: #FFFFFF;
+    --color-cloud: #F8F9FA;
+    --color-ink: #1A1A1A;
+    --color-peach: #FF9AA2;
+    --color-teal-soft: #E2F0CB;
+
+    /* =========================================
+     2. SEMANTIC COLORS (How the paint is used)
+     ========================================= */
+    --bg-light: var(--color-cloud);
+    --bg-surface: var(--color-white);
+
+    --text-primary: var(--color-ink);
+    --text-muted: rgb(26 26 26 / 0.6);
+    /* 60% opacity ink */
+
+    --brand-primary: var(--color-peach);
+    --brand-secondary: var(--color-teal-soft);
+
+    --border-subtle: rgb(0 0 0 / 0.05);
+    /* 5% opacity black */
+
+    /* =========================================
+     3. TYPOGRAPHY
+     ========================================= */
+    /* Using Playfair Display for that high-end magazine feel */
+    --font-serif: 'Playfair Display', 'Georgia', serif;
+    /* Using Inter for clean, legible UI elements */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* =========================================
+     4. SPACING & RADII
+     ========================================= */
+    --radius-pill: 9999px;
+    --radius-card: 2rem;
+
+    /* =========================================
+     5. SHADOWS & EFFECTS
+     ========================================= */
+    --shadow-premium: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
+    --shadow-hover: 0 30px 60px -15px rgba(0, 0, 0, 0.08);
+}

@@ -1,108 +1,118 @@
-/* STEP 1: Use the modern @tailwind directives.
-  This is the correct syntax for modern Vite projects and will fix the 
-  "Package path ./base is not exported" error.
-*/
 @import "tailwindcss";
+@import "./design-system/tokens.css";
 
-/* STEP 2: Define your global theme variables and base styles.
-  It's better to apply these to the `body` or `:root` instead of using
-  the universal selector (*).
-*/
+/* Base reset and global styles for light editorial theme */
 :root {
-  --primary-indigo: #6366f1;
-  --primary-cyan: #06b6d4;
-  --primary-blue: #3b82f6;
-  --accent-purple: #a855f7;
-  --dark-bg: #0f172a;
-  --dark-surface: #1e293b;
-  --light-text: #f1f5f9;
+  --bg-light: #F8F9FA;
+  --text-primary: #1A1A1A;
+  --brand-primary: #FF9AA2;
+  /* Soft Peach */
+  --brand-secondary: #E2F0CB;
+  /* Soft Teal/Green */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', 'Georgia', serif;
+  /* Added serif for headers */
+
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  color-scheme: light;
+  /* Switched to light mode */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  color-scheme: dark;
-  background-color: var(--dark-bg);
-  color: #cbd5e1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* STEP 3: Apply styles to specific elements.
-  Let Tailwind handle the margins and padding via utility classes (e.g., <p class="mb-4">).
-  Only define base styles here.
-*/
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Montserrat', 'Source Sans 3', 'Segoe UI', sans-serif;
-  font-weight: 700;
-  color: #f8fafc;
+/* Typographic Hierarchy - Editorial Style */
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  /* Apply serif to main headers */
+  margin: 0;
+}
+
+h4,
+h5,
+h6 {
+  font-family: var(--font-sans);
+  /* Keep sans-serif for utility headers */
+  margin: 0;
+}
+
+h1 {
+  font-size: 3.5rem;
+  font-weight: 500;
+  /* Lighter weight looks more premium in serif */
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: 2.25rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+h4 {
+  font-size: 1.125rem;
+  font-weight: 500;
 }
 
 p {
-  /* The error "Cannot apply unknown utility class `mb-4`" is caused by using `@apply` here.
-    Using a standard CSS property is safer for base element styles and avoids this error.
-  */
+  line-height: 1.6;
   margin-bottom: 1rem;
-  line-height: 1.625; /* matches Tailwind's leading-relaxed */
+  letter-spacing: 0;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
+*:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-/* STEP 4: Define custom utilities or components using @layer.
-  This is the correct way to add new styles that can be overridden by Tailwind utilities.
-*/
-@layer components {
-  /* Custom scrollbar for dark theme */
-  ::-webkit-scrollbar {
-    width: 10px;
-  }
-  ::-webkit-scrollbar-track {
-    background: #1e293b;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
-    border-radius: 5px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #4f46e5 0%, #0891b2 100%);
-  }
-}
-
+/* Utility classes - adapted for light theme */
 @layer utilities {
-  /* Custom animations */
-  @keyframes blob {
-    0%, 100% {
-      transform: translate(0, 0) scale(1);
+  .shimmer {
+    background: linear-gradient(90deg,
+        #ffffff 0%,
+        #f3f4f6 50%,
+        #ffffff 100%);
+    background-size: 200% 100%;
+    animation: shimmerAnim 1.5s infinite linear;
+  }
+
+  @keyframes shimmerAnim {
+    0% {
+      background-position: -200% 0;
     }
-    25% {
-      transform: translate(20px, -50px) scale(1.1);
-    }
-    50% {
-      transform: translate(-20px, 20px) scale(0.9);
-    }
-    75% {
-      transform: translate(20px, 30px) scale(1.05);
+
+    100% {
+      background-position: 200% 0;
     }
   }
 
-  .animate-blob {
-    animation: blob 7s infinite;
-  }
-  .animation-delay-2000 {
-    animation-delay: 2s;
-  }
-  .animation-delay-4000 {
-    animation-delay: 4s;
+  .text-gradient {
+    background: linear-gradient(to right, var(--brand-primary), var(--brand-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
-

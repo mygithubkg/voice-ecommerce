@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { User, Mail, Phone, MapPin, Calendar, Clock, ShoppingBag, Settings, LogOut, ShieldCheck, Check, Sparkles } from "lucide-react";
 
 const Profile = () => {
   const { user, userProfile, signOut, updateProfile } = useAuth();
   const navigate = useNavigate();
+
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [displayName, setDisplayName] = useState("");
@@ -36,103 +38,202 @@ const Profile = () => {
       setIsSaving(true);
       await updateProfile({ displayName, phone, address });
       setIsEditing(false);
-      alert("Profile updated successfully!");
     } catch (error) {
       console.error("Error saving profile:", error);
-      alert("Failed to update profile. Please try again.");
     } finally {
       setIsSaving(false);
     }
   };
 
+  // --- Unauthenticated State (Premium Frosted Glass) ---
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">Please Sign In</h2>
-          <p className="text-slate-400 mb-6">You need to be signed in to view your profile</p>
-          <button onClick={() => navigate("/")} className="px-6 py-3 bg-linear-to-r from-indigo-600 to-cyan-600 text-white rounded-lg hover:from-indigo-700 hover:to-cyan-700 transition-all">
-            Go to Home
+      <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center p-6 relative overflow-hidden font-sans">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#6C63FF] opacity-[0.05] blur-[150px] rounded-full pointer-events-none"></div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white/[0.02] border border-white/5 backdrop-blur-3xl rounded-[2.5rem] p-12 text-center max-w-md w-full relative z-10 shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
+        >
+          <div className="w-20 h-20 bg-white/[0.03] border border-white/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+            <ShieldCheck className="w-8 h-8 text-[#00D4AA] stroke-[1.5]" />
+          </div>
+          <h2 className="text-3xl font-serif text-white mb-3 tracking-tight">Identity Required</h2>
+          <p className="text-white/40 font-light mb-8 leading-relaxed">Please authenticate your session to access your personal dashboard and preferences.</p>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full px-8 py-4 bg-white text-[#0A0A0F] font-medium rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+          >
+            Return to Initialization
           </button>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
+  const joinDate = user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Recently';
+  const lastSignIn = user.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleDateString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Just now';
+
+  // --- Authenticated State ---
   return (
-    <div className="min-h-screen bg-slate-900">
-      <div className="container mx-auto px-4 py-12">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold bg-linear-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent mb-2">My Profile</h1>
-            <p className="text-slate-400">Manage your account information</p>
+    <div className="min-h-screen bg-[#0A0A0F] pt-32 pb-24 px-6 lg:px-12 relative overflow-hidden font-sans">
+
+      {/* Editorial Ambient Glows */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#00D4AA] opacity-[0.02] blur-[150px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/4"></div>
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#6C63FF] opacity-[0.02] blur-[150px] rounded-full pointer-events-none translate-y-1/3 -translate-x-1/4"></div>
+
+      <div className="max-w-[1000px] mx-auto w-full relative z-10">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} className="space-y-12">
+
+          {/* Cinematic Header */}
+          <div className="flex items-baseline gap-4">
+            <h1 className="text-5xl lg:text-7xl font-serif text-white tracking-tighter">
+              your profile.
+            </h1>
+            <motion.div
+              animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              className="w-2.5 h-2.5 rounded-full bg-[#00D4AA] mb-2 lg:mb-4"
+            />
           </div>
-          <div className="bg-slate-800 rounded-2xl shadow-xl p-8 mb-6">
-            <div className="flex items-center mb-8">
-              <img src={user.photoURL || `https://ui-avatars.com/api/?name=${displayName}&background=4f46e5&color=fff&size=128`} alt={displayName} className="w-24 h-24 rounded-full border-4 border-indigo-500 shadow-lg" />
-              <div className="ml-6">
-                <h2 className="text-2xl font-bold text-white">{displayName}</h2>
-                <p className="text-slate-400">{email}</p>
-                <span className="inline-block mt-2 px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-sm">✓ Verified Account</span>
+
+          {/* Main Profile Card - Frosted Bento Box */}
+          <div className="bg-white/[0.02] border border-white/5 backdrop-blur-3xl rounded-[2.5rem] p-8 sm:p-12 shadow-[0_20px_60px_rgba(0,0,0,0.5)] relative overflow-hidden">
+
+            {/* Identity Section */}
+            <div className="flex flex-col sm:flex-row items-center gap-8 mb-12 relative z-10">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#00D4AA] to-[#6C63FF] rounded-full opacity-20 blur-xl group-hover:opacity-40 transition-opacity duration-500"></div>
+                <img
+                  src={user.photoURL || `https://ui-avatars.com/api/?name=${displayName}&background=0A0A0F&color=fff&size=128&border=1&border-color=333`}
+                  alt={displayName}
+                  className="w-32 h-32 rounded-full border border-white/10 relative z-10 object-cover shadow-2xl"
+                />
+                <div className="absolute bottom-2 right-2 w-7 h-7 bg-white border-[3px] border-[#0A0A0F] rounded-full flex items-center justify-center z-20">
+                  <Check className="w-3.5 h-3.5 text-[#0A0A0F] stroke-[2.5]" />
+                </div>
+              </div>
+
+              <div className="text-center sm:text-left flex-1">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#00D4AA]/30 bg-[#00D4AA]/5 mb-4">
+                  <Sparkles className="w-3 h-3 text-[#00D4AA]" />
+                  <span className="text-[10px] font-medium text-[#00D4AA] uppercase tracking-[0.2em]">Verified</span>
+                </div>
+                <h2 className="text-3xl font-serif text-white mb-2 tracking-tight">{displayName || "Anonymous User"}</h2>
+                <p className="text-white/40 font-light mb-4">{email}</p>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 text-sm text-white/30 font-light">
+                  <span className="flex items-center gap-2"><Calendar className="w-4 h-4 stroke-[1.5]" /> Authenticated {joinDate}</span>
+                  <span className="flex items-center gap-2"><Clock className="w-4 h-4 stroke-[1.5]" /> Pinged {lastSignIn}</span>
+                </div>
               </div>
             </div>
-            <div className="space-y-6">
-              <div>
-                <label className="block text-slate-400 mb-2 text-sm font-medium">Display Name</label>
-                {isEditing ? <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg border border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all" /> : <p className="text-white text-lg">{displayName || "Not set"}</p>}
+
+            {/* Editable Info Grid */}
+            <div className="grid sm:grid-cols-2 gap-6 relative z-10">
+
+              {/* Display Name */}
+              <div className="bg-white/[0.01] border border-white/5 rounded-[1.5rem] p-6 hover:bg-white/[0.02] transition-colors">
+                <label className="flex items-center gap-2 text-[10px] font-medium text-[#00D4AA] uppercase tracking-[0.2em] mb-4">
+                  <User className="w-4 h-4" /> Full Name
+                </label>
+                {isEditing ? (
+                  <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full bg-white/[0.03] border border-white/10 text-white font-light px-5 py-3 rounded-xl focus:border-white/30 focus:bg-white/[0.05] outline-none transition-all" />
+                ) : (
+                  <p className="text-white font-light text-lg">{displayName || "—"}</p>
+                )}
               </div>
-              <div>
-                <label className="block text-slate-400 mb-2 text-sm font-medium">Email Address</label>
-                <p className="text-white text-lg">{email}</p>
-                <p className="text-slate-500 text-sm mt-1">Email cannot be changed</p>
+
+              {/* Email (Read Only) */}
+              <div className="bg-white/[0.01] border border-white/5 rounded-[1.5rem] p-6 opacity-60">
+                <label className="flex items-center gap-2 text-[10px] font-medium text-[#00D4AA] uppercase tracking-[0.2em] mb-4">
+                  <Mail className="w-4 h-4" /> Primary Email
+                </label>
+                <p className="text-white font-light text-lg mb-1">{email}</p>
+                <p className="text-[10px] text-white/40 tracking-wider uppercase">Immutable</p>
               </div>
-              <div>
-                <label className="block text-slate-400 mb-2 text-sm font-medium">Phone Number</label>
-                {isEditing ? <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Enter your phone number" className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg border border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all" /> : <p className="text-white text-lg">{phone || "Not set"}</p>}
+
+              {/* Phone */}
+              <div className="bg-white/[0.01] border border-white/5 rounded-[1.5rem] p-6 hover:bg-white/[0.02] transition-colors">
+                <label className="flex items-center gap-2 text-[10px] font-medium text-[#00D4AA] uppercase tracking-[0.2em] mb-4">
+                  <Phone className="w-4 h-4" /> Secure Line
+                </label>
+                {isEditing ? (
+                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full bg-white/[0.03] border border-white/10 text-white font-light px-5 py-3 rounded-xl focus:border-white/30 focus:bg-white/[0.05] outline-none transition-all" />
+                ) : (
+                  <p className="text-white font-light text-lg">{phone || "—"}</p>
+                )}
               </div>
-              <div>
-                <label className="block text-slate-400 mb-2 text-sm font-medium">Address</label>
-                {isEditing ? <textarea value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Enter your address" rows={3} className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg border border-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all" /> : <p className="text-white text-lg">{address || "Not set"}</p>}
-              </div>
-              <div>
-                <label className="block text-slate-400 mb-2 text-sm font-medium">Account Created</label>
-                <p className="text-white text-lg">{user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not available'}</p>
-              </div>
-              <div>
-                <label className="block text-slate-400 mb-2 text-sm font-medium">Last Sign In</label>
-                <p className="text-white text-lg">{user.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Not available'}</p>
+
+              {/* Address */}
+              <div className="bg-white/[0.01] border border-white/5 rounded-[1.5rem] p-6 hover:bg-white/[0.02] transition-colors">
+                <label className="flex items-center gap-2 text-[10px] font-medium text-[#00D4AA] uppercase tracking-[0.2em] mb-4">
+                  <MapPin className="w-4 h-4" /> Dispatch Coordinates
+                </label>
+                {isEditing ? (
+                  <textarea rows={2} value={address} onChange={(e) => setAddress(e.target.value)} className="w-full bg-white/[0.03] border border-white/10 text-white font-light px-5 py-3 rounded-xl focus:border-white/30 focus:bg-white/[0.05] outline-none transition-all resize-none" />
+                ) : (
+                  <p className="text-white font-light text-lg truncate">{address || "—"}</p>
+                )}
               </div>
             </div>
-            <div className="flex gap-4 mt-8">
-              {isEditing ? (
-                <>
-                  <button onClick={handleSaveProfile} disabled={isSaving} className="flex-1 px-6 py-3 bg-linear-to-r from-indigo-600 to-cyan-600 text-white rounded-lg hover:from-indigo-700 hover:to-cyan-700 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed">{isSaving ? "Saving..." : "Save Changes"}</button>
-                  <button onClick={() => { setIsEditing(false); setDisplayName(userProfile?.displayName || user.displayName || ""); setPhone(userProfile?.phone || ""); setAddress(userProfile?.address || ""); }} disabled={isSaving} className="flex-1 px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
-                </>
-              ) : (
-                <>
-                  <button onClick={() => setIsEditing(true)} className="flex-1 px-6 py-3 bg-linear-to-r from-indigo-600 to-cyan-600 text-white rounded-lg hover:from-indigo-700 hover:to-cyan-700 transition-all font-medium">Edit Profile</button>
-                  <button onClick={() => navigate("/settings")} className="flex-1 px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all font-medium">Settings</button>
-                </>
-              )}
+
+            {/* Action Buttons */}
+            <div className="mt-10 pt-10 border-t border-white/5 flex flex-wrap gap-4 relative z-10">
+              <AnimatePresence mode="wait">
+                {isEditing ? (
+                  <motion.div key="editing" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} className="flex gap-4 w-full sm:w-auto">
+                    <button onClick={handleSaveProfile} disabled={isSaving} className="flex-1 sm:flex-none px-10 py-3.5 bg-white text-[#0A0A0F] font-medium rounded-full transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50">
+                      {isSaving ? "Syncing..." : "Confirm"}
+                    </button>
+                    <button onClick={() => setIsEditing(false)} className="flex-1 sm:flex-none px-10 py-3.5 bg-transparent border border-white/10 text-white/70 hover:text-white hover:bg-white/5 font-medium rounded-full transition-colors">
+                      Abort
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.button key="viewing" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} onClick={() => setIsEditing(true)} className="w-full sm:w-auto px-10 py-3.5 border border-white/20 text-white hover:bg-white hover:text-[#0A0A0F] font-medium rounded-full transition-all duration-300">
+                    Modify Parameters
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <motion.button whileHover={{ scale: 1.02 }} onClick={() => navigate("/cart")} className="p-6 bg-slate-800 rounded-xl text-left hover:bg-slate-700 transition-all group">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-semibold text-lg">My Cart</h3>
-                <svg className="w-6 h-6 text-indigo-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+
+          {/* Quick Actions (Editorial Cards) */}
+          <div className="grid sm:grid-cols-3 gap-6">
+
+            <button onClick={() => navigate("/cart")} className="bg-white/[0.02] border border-white/5 rounded-[2rem] p-8 text-left hover:bg-white/[0.04] transition-colors group flex flex-col justify-between min-h-[200px]">
+              <div className="w-12 h-12 bg-white/[0.03] border border-white/10 rounded-full flex items-center justify-center text-white/50 group-hover:text-[#00D4AA] group-hover:border-[#00D4AA]/30 transition-all">
+                <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
               </div>
-              <p className="text-slate-400 text-sm">View your shopping cart</p>
-            </motion.button>
-            <motion.button whileHover={{ scale: 1.02 }} onClick={handleSignOut} className="p-6 bg-slate-800 rounded-xl text-left hover:bg-red-500/10 transition-all group border border-transparent hover:border-red-500/30">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-semibold text-lg">Sign Out</h3>
-                <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+              <div>
+                <h3 className="font-serif text-white text-2xl mb-2">Ledger</h3>
+                <p className="text-white/40 font-light text-sm leading-relaxed">Review your past requisitions and fulfillment statuses.</p>
               </div>
-              <p className="text-slate-400 text-sm">Sign out of your account</p>
-            </motion.button>
+            </button>
+
+            <button onClick={() => navigate("/settings")} className="bg-white/[0.02] border border-white/5 rounded-[2rem] p-8 text-left hover:bg-white/[0.04] transition-colors group flex flex-col justify-between min-h-[200px]">
+              <div className="w-12 h-12 bg-white/[0.03] border border-white/10 rounded-full flex items-center justify-center text-white/50 group-hover:text-[#6C63FF] group-hover:border-[#6C63FF]/30 transition-all">
+                <Settings className="w-5 h-5 stroke-[1.5]" />
+              </div>
+              <div>
+                <h3 className="font-serif text-white text-2xl mb-2">System</h3>
+                <p className="text-white/40 font-light text-sm leading-relaxed">Calibrate your notifications, language, and interface.</p>
+              </div>
+            </button>
+
+            <button onClick={handleSignOut} className="bg-white/[0.02] border border-white/5 rounded-[2rem] p-8 text-left hover:bg-white/[0.04] transition-colors group flex flex-col justify-between min-h-[200px]">
+              <div className="w-12 h-12 bg-white/[0.03] border border-white/10 rounded-full flex items-center justify-center text-white/50 group-hover:text-red-400 group-hover:border-red-400/30 transition-all">
+                <LogOut className="w-5 h-5 stroke-[1.5]" />
+              </div>
+              <div>
+                <h3 className="font-serif text-white text-2xl mb-2">Disconnect</h3>
+                <p className="text-white/40 font-light text-sm leading-relaxed">Securely terminate your current authenticated session.</p>
+              </div>
+            </button>
+
           </div>
+
         </motion.div>
       </div>
     </div>
